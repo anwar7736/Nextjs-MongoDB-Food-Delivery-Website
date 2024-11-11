@@ -1,16 +1,32 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
-
+import toast from 'cogo-toast-react-17-fix';
+import { useRouter } from 'next/navigation'
 const Login = () => {
-    const [form, setForm] = useState([]);
+    const router = useRouter();
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors },
       } = useForm();
-    const loginFormHandler = (data) => {
-        console.log(data);
+    const loginFormHandler = async (data) => {
+        data.login = true;
+        let res = await fetch("api/v1/restaurant", {
+            method: "POST",
+            body: JSON.stringify(data)
+        });
+
+        res = await res.json();
+        if(res.success)
+        {
+            delete res.data.password;
+            localStorage.setItem('auth', JSON.stringify(res.data));
+            router.push("/restaurant/dashboard");
+            toast.success("Login Successfully");
+        }
+        else{
+            toast.error("Invalid credentials.");
+        }
         
     }
     return (
@@ -19,11 +35,11 @@ const Login = () => {
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(loginFormHandler)}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="username">
+                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
                             Email
                         </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="username" type="email" placeholder="Email" {...register("username", { required: true })}/>
-                        {errors.username && <p className="text-red-500 text-sm text-start">This field is required.</p>}
+                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: true })}/>
+                        {errors.email && <p className="text-red-500 text-sm text-start">This field is required.</p>}
                         
                     </div>
                     <div className="mb-6">

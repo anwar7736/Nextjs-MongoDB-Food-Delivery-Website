@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-
+import { useRouter } from 'next/navigation'
+import toast from 'cogo-toast-react-17-fix';
 const SignUp = () => {
-  const [form, setForm] = useState([]);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -10,8 +11,25 @@ const SignUp = () => {
     formState: { errors },
   } = useForm();
 
-  const signupFormHandler = (data) => {
-      console.log(data);
+  const signupFormHandler = async (data) => {
+    data.login = false;
+    let res = await fetch("api/v1/restaurant", {
+        method: "POST",
+        body: JSON.stringify(data)
+    });
+
+    res = await res.json();
+    if(res.success)
+    {
+        delete res.data.password;
+        localStorage.setItem('auth', JSON.stringify(res.data));
+        router.push("/restaurant/dashboard");
+        toast.success(res.message);
+    }
+    else{
+        toast.error(res.message);
+        console.log(res);
+    }
   }
 
   return (

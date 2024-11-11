@@ -13,7 +13,42 @@ export async function GET()
 
 export async function POST(request)
 {
-    const payload = await request.json();
+    let payload = await request.json();
     await mongoose.connect(connectionStr);
-    return NextResponse.json({success: true, data:payload});
+    let success = false;
+    let data = [];
+    let message = "";
+    if(payload.login)
+    {
+        delete payload.login;
+        let res = await restaurantSchema.findOne(payload);
+        if(res)
+        {
+            message = 'Login Successfully';
+            data = res;
+            success = true;
+        }
+    }
+    else{
+        delete payload.login;
+        delete payload.cpassword;
+        const user = await restaurantSchema.findOne({
+            $or: [{ email: payload.email }, { phone: payload.phone }]
+        });
+
+        if(user)
+        {
+            message = 'Restaurant already exists.';
+            success = false;
+        }
+        else{
+            let res = await new restaurantSchema(payload);
+            res = await res.save();
+            message = 'Registration Successfully';
+            data = res;
+            success = true;
+        }
+    }
+
+    return NextResponse.json({success, message, data});
 }
