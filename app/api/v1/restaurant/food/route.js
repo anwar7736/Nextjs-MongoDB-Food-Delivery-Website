@@ -1,14 +1,14 @@
 import { mongoDB_connect } from "@/app/helpers/helper";
 import { foodSchema } from "@/app/models/foodModel";
-import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
 
-export async function GET() 
+export async function GET(request) 
 {
     let success = false;
     let data = [];
     mongoDB_connect();
-    data = await foodSchema.find();
+    const restaurant_id = request.nextUrl.searchParams.get('restaurant_id');
+    data = await foodSchema.find({restaurant_id});
     if(data)
     {
         success = true;

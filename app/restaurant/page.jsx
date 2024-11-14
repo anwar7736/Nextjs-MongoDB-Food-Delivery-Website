@@ -7,8 +7,7 @@ import SignUp from "../_components/auth/SignUp";
 const Restaurant = () => {
     const [login, setLogin] = useState(true);
   return (
-    <div>
-        <h3 className="text-center mb-3">Restaurant Login/Signup</h3>
+    <div className="mt-4">
         {
             login ? <Login/> : <SignUp/>
         }

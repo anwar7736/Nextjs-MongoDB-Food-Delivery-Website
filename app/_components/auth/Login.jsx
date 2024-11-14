@@ -1,6 +1,8 @@
 import { useForm } from "react-hook-form";
 import toast from 'cogo-toast-react-17-fix';
 import { useRouter } from 'next/navigation'
+import ValidationError from "../ValidationError";
+import { session } from "@/app/helpers/helper";
 const Login = () => {
     const router = useRouter();
     const {
@@ -20,7 +22,8 @@ const Login = () => {
         if(res.success)
         {
             delete res.data.password;
-            localStorage.setItem('auth', JSON.stringify(res.data));
+            session('restaurant_auth', res.data);
+            document.cookie = `restaurant_auth=${res.data._id}; path=/; HttpOnly`;
             router.push("/restaurant/dashboard");
             toast.success("Login Successfully");
         }
@@ -38,16 +41,16 @@ const Login = () => {
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
                             Email
                         </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: true })}/>
-                        {errors.email && <p className="text-red-500 text-sm text-start">This field is required.</p>}
+                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: 'This field is required' })}/>
+                        {errors.email && <ValidationError message={errors.email.message} />}
                         
                     </div>
                     <div className="mb-6">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="password">
                             Password
                         </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="******************" {...register("password", { required: true })}/>
-                        {errors.password && <p className="text-red-500 text-sm text-start">This field is required.</p>}
+                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="******************" {...register("password", { required: 'This field is required' })}/>
+                        {errors.password && <ValidationError message={errors.password.message} />}
                     </div>
                     <div className="flex items-center justify-between">
                         <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
