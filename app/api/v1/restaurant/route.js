@@ -1,20 +1,19 @@
-import { connectionStr } from "@/app/lib/db";
+import { mongoDB_connect } from "@/app/helpers/helper";
 import { restaurantSchema } from "@/app/models/restaurantModel";
-import mongoose from "mongoose";
 import { NextResponse } from "next/server";
 
 
 export async function GET()
 {
-    await mongoose.connect(connectionStr);
+    mongoDB_connect();
     const data  = await restaurantSchema.find();
     return NextResponse.json({success: true, data});
 }
 
 export async function POST(request)
 {
+    mongoDB_connect();
     let payload = await request.json();
-    await mongoose.connect(connectionStr);
     let success = false;
     let data = [];
     let message = "";
