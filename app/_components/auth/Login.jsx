@@ -24,9 +24,9 @@ const Login = () => {
         if(res.success)
         {
             delete res.data.password;
-            session('restaurant_auth', res.data);
-            document.cookie = `restaurant_auth=${res.data._id}; path=/; HttpOnly`;
+            setCookie('restaurant_auth', JSON.stringify(res.data));
             router.push("/restaurant/dashboard");
+            router.refresh();
             toast.success("Login Successfully");
         }
         else{

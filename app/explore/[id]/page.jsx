@@ -2,9 +2,7 @@
 import { useEffect, useState } from "react";
 
 const Explore = (props) => {
-  
-    const name = props.params.name;
-    const _id  = props.searchParams.id;
+    const _id = props.params.id;
     const [restaurantDetails, setRestaurantDetails] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
     const getRestaurantDetails = async () =>
@@ -25,10 +23,10 @@ const Explore = (props) => {
   return (
     <div>
         <div className="restaurant-page-banner">
-            <h1>{decodeURI(name)}</h1>
+            <h1>{restaurantDetails?.name && decodeURI(restaurantDetails.name)}</h1>
         </div>
         <div className="details-wrapper">
-                <h4>Contact : {restaurantDetails?.contact}</h4>
+                <h4>Contact : {restaurantDetails?.phone}</h4>
                 <h4>City:{restaurantDetails?.city}</h4>
                 <h4>Address:{restaurantDetails?.address}</h4>
                 <h4>Email:{restaurantDetails?.email}</h4>
@@ -37,7 +35,7 @@ const Explore = (props) => {
           {
               foodItems.length > 0 ? foodItems.map((item) => (
                   <div className="list-item">
-                      <div><img style={{ width: 100 }} src={item.img_path} /></div>
+                      <div><img style={{ width: 100 }} src={item.image} /></div>
 
                       <div>
                           <div>{item.name}</div>
@@ -46,7 +44,7 @@ const Explore = (props) => {
                           {
                               // cartIds.includes(item._id) ?
                                   // <button  onClick={()=>removeFromCart(item._id)} >Remove From Cart</button>
-                                  <button>Add to Cart</button>
+                                  <button className="">Add to Cart</button>
 
                           }
 
@@ -54,7 +52,7 @@ const Explore = (props) => {
 
                   </div>
                 ))
-                : <h1>No Food Items for this Restaurant</h1>
+                : <h1 className="text-center text-red-600"> No Food Items Found for This Restaurant </h1>
             }
           </div>
     </div>

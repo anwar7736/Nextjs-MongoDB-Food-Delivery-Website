@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -8,56 +9,47 @@ export default function Home() {
   const [restaurants, setRestaurants] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState('');
   const [showLocation, setShowLocation] = useState(false);
+  const [restaurantInput, setRestaurantInput] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     loadLocations();
-    loadRestaurants()
+    loadRestaurants({location: '', restaurant: ''});
   }, [])
 
   const loadLocations = async () => {
-    // let response = await fetch('http://localhost:3000/api/customer/locations');
-    // response = await response.json()
-    // if (response.success) {
-    //   setLocations(response.result)
-    // }
-
-    setLocations(["Dhaka", "Khulna", "Jessore", "Rangpur"]);
+    let response = await fetch('/api/v1/customer/locations');
+    response = await response.json()
+    if (response.success) 
+    {
+      setLocations(response.data);
+    }
   }
 
-  const loadRestaurants = async (params) => {
-    // let url="http://localhost:3000/api/customer";
-    // if(params?.location){
-    //   url=url+"?location="+params.location
-    // }else if(params?.restaurant){
-    //   url=url+"?restaurant="+params.restaurant
-    // }
-    // let response = await fetch(url);
-    // response = await response.json()
-    // if (response.success) {
-    //   setRestaurants(response.result)
-    // }
-
-    setRestaurants([
-      {_id:1,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:2,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:3,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:4,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:5,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:6,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:7,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:8,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:9,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-      {_id:10,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
-    ])
+  const loadRestaurants = async ({location = selectedLocation, restaurant = restaurantInput}) => {
+    let url=`/api/v1/customer?location=${location}&restaurant=${restaurant}`;
+    let response = await fetch(url);
+    response = await response.json()
+    if (response.success) 
+    {
+      setRestaurants(response.data);
+    }
   }
 
 
-  const handleListItem = (item) => {
-    setSelectedLocation(item)
-    setShowLocation(false)
-    loadRestaurants({ location: item })
+  const handleListItem = (item) => 
+  {
+    setSelectedLocation(item);
+    setShowLocation(false);
+    loadRestaurants({location:item});
   }
+
+  const handleRestaurantInput = (value) =>
+  {
+    setRestaurantInput(value);
+    loadRestaurants( {restaurant:value});
+  }
+
   return (
     <main className="">
       <div className="main-page-banner">
@@ -68,21 +60,25 @@ export default function Home() {
             className="select-input" placeholder="Select Place" />
           <ul className="location-list">
             {
-              showLocation && locations.map((item) => (
+              showLocation && <li onClick={() => handleListItem('')}>All Locations</li>
+            }
+            {
+              showLocation && locations.map((item, key) => (
                 <li onClick={() => handleListItem(item)}>{item}</li>
               ))
             }
           </ul>
 
           <input type="text" className="search-input"
-            onChange={(event) => loadRestaurants({ restaurant: event.target.value })}
+            value={restaurantInput}
+            onChange={(e) => handleRestaurantInput(e.target.value)}
             placeholder="Enter food or restaurant name" />
         </div>
       </div>
       <div className="restaurant-list-container">
         {
           restaurants.map((item) => (
-            <div onClick={() => router.push('explore/' + item.name + '?id=' + item._id)} className="restaurant-wrapper">
+            <Link href={`explore/${item._id}`} className="restaurant-wrapper">
               <div className="heading-wrapper">
                 <h3>{item.name}</h3>
                 <h5>Contact:{item.contact}</h5>
@@ -92,7 +88,7 @@ export default function Home() {
                 <div className="address"> {item.address}, Email: {item.email}</div>
 
               </div>
-            </div>
+            </Link>
           ))
         }
       </div>

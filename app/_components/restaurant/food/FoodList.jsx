@@ -3,17 +3,17 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 const FoodList = () => {
-  const [foodItem, setFoodItem] = useState([]);
+  const [foodItems, setFoodItems] = useState([]);
   const getFoodList = async () => {
-      const restaurant = await restaurant_auth();
-      let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${restaurant._id}`)
-          res = await res.json();
-      if(res.success)
-      {
-        setFoodItem(res.data);
-        
-      }
-    
+    const restaurant = await restaurant_auth();
+    let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${restaurant._id}`)
+    res = await res.json();
+
+    if (res.success) {
+      setFoodItems(res.foodItems);
+
+    }
+
   }
 
   const deleteItem = async (_id) => {
@@ -26,20 +26,18 @@ const FoodList = () => {
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!"
     }).then(async (result) => {
-      if (result.isConfirmed) 
-      {
+      if (result.isConfirmed) {
         let res = await fetch(`/api/v1/restaurant/food/${_id}`, {
           method: "DELETE"
         })
         res = await res.json();
-        if(res.success)
-        {
-            getFoodList();
-            Swal.fire({
-              title: "Deleted!",
-              text: res.message,
-              icon: "success"
-            });
+        if (res.success) {
+          getFoodList();
+          Swal.fire({
+            title: "Deleted!",
+            text: res.message,
+            icon: "success"
+          });
         }
 
       }
@@ -49,7 +47,7 @@ const FoodList = () => {
   useEffect(() => {
     getFoodList();
   }, []);
-  
+
   return (
     <div>
       <h4>List of All Food Item</h4>
@@ -73,30 +71,29 @@ const FoodList = () => {
           </thead>
           <tbody>
             {
-              foodItem.map( (item) => (
-                <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={item._id}> 
-                <td scope="row" className="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                  <img className="w-10 h-10 rounded-full" src={item.image} alt="Jese image" />
-                </td>
-                <td className="px-6 py-4">
+              foodItems.map((item) => (
+                <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={item._id}>
+                  <td scope="row" className="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                    <img className="w-10 h-10 rounded-full" src={item.image} alt="Jese image" />
+                  </td>
+                  <td className="px-6 py-4">
                     {item.name}
-                </td>
-                <td className="px-6 py-4">
-                  ${item.price}
-                </td>
-                <td className="px-6 py-4">
-                  <Link href={`/restaurant/edit_food/${item._id}`} className="bg-green-500 p-2 text-white">Edit</Link>
-                  &nbsp;
-                  <button onClick={() => deleteItem(item._id)} className="bg-red-500 p-2 text-white">Delete</button>
-                </td>
-              </tr>
-              )  
-            )
+                  </td>
+                  <td className="px-6 py-4">
+                    ${item.price}
+                  </td>
+                  <td className="px-6 py-4">
+                    <Link href={`/restaurant/edit_food/${item._id}`} className="bg-green-500 p-2 text-white">Edit</Link>
+                    &nbsp;
+                    <button onClick={() => deleteItem(item._id)} className="bg-red-500 p-2 text-white">Delete</button>
+                  </td>
+                </tr>
+              )
+              )
             }
           </tbody>
         </table>
       </div>
-
     </div>
   )
 }

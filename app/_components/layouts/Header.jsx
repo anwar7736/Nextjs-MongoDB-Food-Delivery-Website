@@ -1,6 +1,7 @@
 "use client";
 import { isRestaurantAuth, restaurant_auth, session_destroy } from "@/app/helpers/helper"
 import cogoToast from "cogo-toast-react-17-fix";
+import { deleteCookie } from "cookies-next";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,10 +22,10 @@ const Header = () => {
           }).then(async (result) => {
             if (result.isConfirmed) 
             {
-                session_destroy('restaurant_auth');
+                deleteCookie('restaurant_auth');
                 setAuth(false);
                 cogoToast.success('Logout successfully.');
-                router.push('/restaurant');
+                router.push('/');
             }
           });
     }
@@ -67,6 +68,12 @@ const Header = () => {
         </li>
         <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><a href='javascript:void(0)'
             className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Contact</a>
+        </li>
+        <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><a href='javascript:void(0)'
+            className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Profile</a>
+        </li>
+        <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><a href='javascript:void(0)'
+            className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Cart <small className="text-red-600">(0)</small></a>
         </li>
       </ul>
     </div>

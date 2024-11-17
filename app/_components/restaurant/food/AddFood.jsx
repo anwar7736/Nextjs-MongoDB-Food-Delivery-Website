@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "../../ValidationError";
+import { restaurant_auth } from "@/app/helpers/helper";
 const AddFood = (props) => {
   const router = useRouter();
   const {
@@ -12,7 +13,7 @@ const AddFood = (props) => {
   } = useForm();
 
   const submitFormHandler = async (data) => {
-    const restaurant = restaurant_auth();
+    const restaurant = await restaurant_auth();
     data.restaurant_id = restaurant._id;
     console.log(data);
     

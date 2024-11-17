@@ -1,5 +1,6 @@
 import mongoose from "mongoose"
 import { connectionStr } from "../lib/db"
+import { getCookie, hasCookie } from "cookies-next";
 
 export const mongoDB_connect = async () => 
 {
@@ -29,10 +30,10 @@ export const session_destroy = (key) =>
 
 export const restaurant_auth = () => 
 {
-    return session('restaurant_auth');
+    return JSON.parse(getCookie('restaurant_auth'));
 }
 
 export const isRestaurantAuth = () => 
 {
-    return localStorage.getItem('restaurant_auth') !== null;
+    return hasCookie('restaurant_auth');
 }

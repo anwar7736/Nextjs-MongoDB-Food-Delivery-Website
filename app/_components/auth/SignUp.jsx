@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "../ValidationError";
+import { setCookie } from "cookies-next";
 const SignUp = () => {
   const router = useRouter();
   const {
@@ -23,7 +24,7 @@ const SignUp = () => {
     if(res.success)
     {
         delete res.data.password;
-        session('restaurant_auth', res.data);
+        setCookie('restaurant_auth', JSON.stringify(res.data));
         router.push("/restaurant/dashboard");
         toast.success(res.message);
     }
