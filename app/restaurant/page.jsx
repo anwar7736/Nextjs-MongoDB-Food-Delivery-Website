@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Login from "../_components/auth/Login";
 import SignUp from "../_components/auth/SignUp";
+import { getCookie} from "cookies-next";
 
 const Restaurant = () => {
     const [login, setLogin] = useState(true);

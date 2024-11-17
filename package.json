@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "cogo-toast-react-17-fix": "^4.2.7",
+    "cookies-next": "^4.3.0",
     "mongoose": "^8.8.0",
     "next": "14.2.15",
     "react": "^18",

@@ -3,6 +3,7 @@ import toast from 'cogo-toast-react-17-fix';
 import { useRouter } from 'next/navigation'
 import ValidationError from "../ValidationError";
 import { session } from "@/app/helpers/helper";
+import { setCookie } from "cookies-next";
 const Login = () => {
     const router = useRouter();
     const {
@@ -13,6 +14,7 @@ const Login = () => {
       } = useForm();
     const loginFormHandler = async (data) => {
         data.login = true;
+
         let res = await fetch("api/v1/restaurant", {
             method: "POST",
             body: JSON.stringify(data)
