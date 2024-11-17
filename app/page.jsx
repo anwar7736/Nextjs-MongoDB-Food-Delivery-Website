@@ -1,101 +1,101 @@
+"use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [locations, setLocations] = useState([]);
+  const [restaurants, setRestaurants] = useState([]);
+  const [selectedLocation, setSelectedLocation] = useState('');
+  const [showLocation, setShowLocation] = useState(false);
+  const router = useRouter();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  useEffect(() => {
+    loadLocations();
+    loadRestaurants()
+  }, [])
+
+  const loadLocations = async () => {
+    // let response = await fetch('http://localhost:3000/api/customer/locations');
+    // response = await response.json()
+    // if (response.success) {
+    //   setLocations(response.result)
+    // }
+
+    setLocations(["Dhaka", "Khulna", "Jessore", "Rangpur"]);
+  }
+
+  const loadRestaurants = async (params) => {
+    // let url="http://localhost:3000/api/customer";
+    // if(params?.location){
+    //   url=url+"?location="+params.location
+    // }else if(params?.restaurant){
+    //   url=url+"?restaurant="+params.restaurant
+    // }
+    // let response = await fetch(url);
+    // response = await response.json()
+    // if (response.success) {
+    //   setRestaurants(response.result)
+    // }
+
+    setRestaurants([
+      {_id:1,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:2,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:3,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:4,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:5,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:6,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:7,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:8,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:9,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+      {_id:10,name:"Test", email:'test@gmail.com', contact:'011232', address: 'test address', city: 'Dhaka'},
+    ])
+  }
+
+
+  const handleListItem = (item) => {
+    setSelectedLocation(item)
+    setShowLocation(false)
+    loadRestaurants({ location: item })
+  }
+  return (
+    <main className="">
+      <div className="main-page-banner">
+        <h1 className="app-header-title">Food Delivery App</h1>
+        <div className="input-wrapper">
+          <input type="text" value={selectedLocation}
+            onClick={() => setShowLocation(true)}
+            className="select-input" placeholder="Select Place" />
+          <ul className="location-list">
+            {
+              showLocation && locations.map((item) => (
+                <li onClick={() => handleListItem(item)}>{item}</li>
+              ))
+            }
+          </ul>
+
+          <input type="text" className="search-input"
+            onChange={(event) => loadRestaurants({ restaurant: event.target.value })}
+            placeholder="Enter food or restaurant name" />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </div>
+      <div className="restaurant-list-container">
+        {
+          restaurants.map((item) => (
+            <div onClick={() => router.push('explore/' + item.name + '?id=' + item._id)} className="restaurant-wrapper">
+              <div className="heading-wrapper">
+                <h3>{item.name}</h3>
+                <h5>Contact:{item.contact}</h5>
+              </div>
+              <div className="address-wrapper">
+                <div>{item.city},</div>
+                <div className="address"> {item.address}, Email: {item.email}</div>
+
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </main>
   );
 }

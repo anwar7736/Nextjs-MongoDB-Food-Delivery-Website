@@ -19,3 +19,216 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+*:focus {
+  outline: none;
+}
+
+.app-header-title {
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
+.main-page-banner,
+.restaurant-page-banner {
+  background-image: url('https://a.storyblok.com/f/88809/1150x450/30a9c4f9a6/igevia_header_fastfood01_450.jpg');
+  height: 300px;
+  text-align: center;
+  padding: 30px;
+  background-color: rgba(0, 0, 0, 0.6);
+  background-blend-mode: multiply;
+  color: #fff;
+}
+
+.main-page-banner .input-wrapper {
+  background-color: #fff;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 60%;
+  margin: auto;
+  color: #000;
+}
+
+.main-page-banner .select-input {
+  height: 40px;
+  border: none;
+  padding-left: 15px;
+  width: 25%;
+}
+
+.main-page-banner .search-input {
+  height: 40px;
+  border: none;
+  padding-left: 15px;
+  border-left: 1px solid #ccc;
+  width: 45%;
+}
+
+.location-list {
+  color: #000;
+  list-style-type: none;
+  text-align: left;
+  position: absolute;
+  background-color: #fff;
+  padding: 0;
+  margin: 0;
+  margin-left: -5px;
+  border: 1px solid #ccc;
+}
+
+.location-list li {
+  width: 180px;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.restaurant-list-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  margin-top: 40px;
+  margin-bottom: 50px;
+}
+
+.restaurant-wrapper {
+  max-width: 45%;
+  background-color: rgb(101, 202, 76);
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.restaurant-wrapper .heading-wrapper,
+.restaurant-wrapper .address-wrapper {
+  padding-left: 15px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.restaurant-wrapper h5 {
+  margin-left: 15px;
+}
+
+.restaurant-wrapper .address {
+  margin-left: 5px;
+}
+
+.restaurant-page-banner h1 {
+  font-size: 65px;
+}
+
+.details-wrapper {
+  display: flex;
+  background-color: orange;
+}
+
+.details-wrapper h4 {
+  width: 50%;
+}
+
+.food-list-wrapper {
+  margin-bottom: 50px;
+  margin-top: 50px;
+}
+
+.food-list-wrapper .list-item {
+  color: orange;
+  font-weight: bold;
+  border-bottom: 1px solid;
+  padding: 20px;
+  display: flex;
+  text-transform: capitalize;
+}
+
+.food-list-wrapper .list-item .description {
+  font-weight: lighter;
+}
+
+.food-list-wrapper .list-item button {
+  color: #fff;
+  background-color: orange;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.food-list-wrapper .list-item img {
+  width: 100px;
+  padding-right: 20px;
+}
+
+.list-item-block-1 {
+  width: 20%;
+}
+
+.list-item-block-2 {
+  width: 60%;
+}
+
+.list-item-block-3 {
+  width: 20%;
+}
+
+.total-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  border-bottom: 1px solid orange;
+  padding-bottom: 20px;
+}
+
+.total-wrapper .row {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 20%;
+  margin-right: 20%;
+  color: orange;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.total-wrapper .block-1 {
+  width: 70%;
+}
+
+.total-wrapper .block-2 {
+  width: 30%;
+}
+
+.total-wrapper .block-2 button {
+  padding: 10px 25px;
+  border: navajowhite;
+  background-color: orange;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+
+.auth-container {
+  display: flex;
+}
+
+.login-wrapper,
+.signup-wrapper {
+  height: 400px;
+  border: 1px solid #ccc;
+  margin: 50px;
+  padding: 20px;
+  width: 50%;
+  text-align: center;
+}
+
+.footer-header{
+  font-size: 15px;
+  text-align: center;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+}
