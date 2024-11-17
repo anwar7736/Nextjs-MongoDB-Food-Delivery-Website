@@ -32,8 +32,8 @@ const Header = () => {
     <div>
         <header className='flex shadow-md py-4 px-4 sm:px-10 bg-white font-[sans-serif] min-h-[70px] tracking-wide relative z-50'>
   <div className='flex flex-wrap items-center justify-between gap-5 w-full'>
-    <a href="javascript:void(0)"><img src="https://readymadeui.com/readymadeui.svg" alt="logo" className='w-36' />
-    </a>
+    <Link href="/restaurant/dashboard"><img src="logo.png" alt="logo" className='w-12' />
+    </Link>
 
     <div id="collapseMenu"
       className='max-lg:hidden lg:!block max-lg:before:fixed max-lg:before:bg-black max-lg:before:opacity-50 max-lg:before:inset-0 max-lg:before:z-50'>
