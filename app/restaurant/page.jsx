@@ -9,6 +9,7 @@ const Restaurant = () => {
     const [login, setLogin] = useState(true);
   return (
     <div className="mt-4">
+        <title>Login/Signup</title>
         {
             login ? <Login/> : <SignUp/>
         }

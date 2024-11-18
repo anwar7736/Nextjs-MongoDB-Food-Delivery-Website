@@ -1,13 +1,14 @@
 "use client";
+import { AuthContext } from "@/app/contexts/AuthContext";
 import { isRestaurantAuth, restaurant_auth, session_destroy } from "@/app/helpers/helper"
 import cogoToast from "cogo-toast-react-17-fix";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 const Header = () => {
-    const [auth, setAuth] = useState(isRestaurantAuth());
+    const {auth, setAuth} = useContext(AuthContext);
     const router = useRouter();
     const restaurantLogout = async () => {
         Swal.fire({

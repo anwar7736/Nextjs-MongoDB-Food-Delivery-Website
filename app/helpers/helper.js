@@ -35,5 +35,5 @@ export const restaurant_auth = () =>
 
 export const isRestaurantAuth = () => 
 {
-    return hasCookie('restaurant_auth');
+    return hasCookie('restaurant_auth') ? true : false;
 }

@@ -4,7 +4,10 @@ import { useRouter } from 'next/navigation'
 import ValidationError from "../ValidationError";
 import { session } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
+import { useContext } from "react";
+import { AuthContext } from "@/app/contexts/AuthContext";
 const Login = () => {
+    const {auth, setAuth} = useContext(AuthContext);
     const router = useRouter();
     const {
         register,
@@ -25,8 +28,8 @@ const Login = () => {
         {
             delete res.data.password;
             setCookie('restaurant_auth', JSON.stringify(res.data));
+            setAuth(1);
             router.push("/restaurant/dashboard");
-            router.refresh();
             toast.success("Login Successfully");
         }
         else{
