@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 
 export function middleware(request) {
   const token = request.cookies.get('restaurant_auth')?.value;
+  
   const AuthTryToAccess = request.nextUrl.pathname == '/restaurant';
   if(AuthTryToAccess)
   {

@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
 import { useEffect, useState } from "react";
+import withAuth from "@/app/hoc/withAuth";
 const EditFood = ({params}) => {
   const {
     register,
@@ -88,4 +89,4 @@ const EditFood = ({params}) => {
   )
 }
 
-export default EditFood
+export default withAuth(EditFood)

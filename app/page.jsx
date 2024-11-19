@@ -52,10 +52,12 @@ export default function Home() {
 
   return (
     <main className="">
+      <title>Home</title>
       <div className="main-page-banner">
         <h1 className="app-header-title">Food Delivery App</h1>
         <div className="input-wrapper">
           <input type="text" value={selectedLocation}
+            onChange={() => setShowLocation(true)}
             onClick={() => setShowLocation(true)}
             className="select-input" placeholder="Select Place" />
           <ul className="location-list">

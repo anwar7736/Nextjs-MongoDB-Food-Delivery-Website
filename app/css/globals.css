@@ -31,7 +31,7 @@ body {
 
 .main-page-banner,
 .restaurant-page-banner {
-  background-image: url('https://a.storyblok.com/f/88809/1150x450/30a9c4f9a6/igevia_header_fastfood01_450.jpg');
+  background-image: url('/home_banner.jpg');
   height: 300px;
   text-align: center;
   padding: 30px;
@@ -227,8 +227,5 @@ body {
 .footer-header{
   font-size: 15px;
   text-align: center;
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
+  position: relative;
 }

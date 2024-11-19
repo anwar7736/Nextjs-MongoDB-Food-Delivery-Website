@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Login from "../_components/auth/Login";
 import SignUp from "../_components/auth/SignUp";
-import { getCookie} from "cookies-next";
+import withGuest from "../hoc/withGuest";
 
 const Restaurant = () => {
     const [login, setLogin] = useState(true);
@@ -25,4 +25,4 @@ const Restaurant = () => {
   )
 }
 
-export default Restaurant
+export default withGuest(Restaurant)

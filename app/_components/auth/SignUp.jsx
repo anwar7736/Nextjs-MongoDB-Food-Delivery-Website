@@ -5,6 +5,7 @@ import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "../ValidationError";
 import { setCookie } from "cookies-next";
 import { AuthContext } from "@/app/contexts/AuthContext";
+import { restaurant_auth } from "@/app/helpers/helper";
 const SignUp = () => {
   const router = useRouter();
   const {auth, setAuth} = useContext(AuthContext);
@@ -27,7 +28,7 @@ const SignUp = () => {
     {
         delete res.data.password;
         setCookie('restaurant_auth', JSON.stringify(res.data));
-        setAuth(1);
+        setAuth(restaurant_auth());
         router.push("/restaurant/dashboard");
         toast.success(res.message);
     }

@@ -14,7 +14,7 @@ export const session = (key, value = "") =>
         return localStorage.setItem(key, JSON.stringify(value));
     }
     else{
-        return JSON.parse(localStorage.getItem(key));
+        return localStorage.getItem(key) != null ? JSON.parse(localStorage.getItem(key)) : '';
     }
 }
 
@@ -30,7 +30,7 @@ export const session_destroy = (key) =>
 
 export const restaurant_auth = () => 
 {
-    return JSON.parse(getCookie('restaurant_auth'));
+    return isRestaurantAuth() ? JSON.parse(getCookie('restaurant_auth')) : '';
 }
 
 export const isRestaurantAuth = () => 

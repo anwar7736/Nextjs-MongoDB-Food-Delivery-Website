@@ -71,21 +71,21 @@ const FoodList = () => {
           </thead>
           <tbody>
             {
-              foodItems.map((item) => (
-                <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={item._id}>
+              foodItems?.map((item) => (
+                <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={item?._id}>
                   <td scope="row" className="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    <img className="w-10 h-10 rounded-full" src={item.image} alt="Jese image" />
+                    <img className="w-10 h-10 rounded-full" src={item?.image} alt="Jese image" />
                   </td>
                   <td className="px-6 py-4">
-                    {item.name}
+                    {item?.name}
                   </td>
                   <td className="px-6 py-4">
-                    ${item.price}
+                    ${item?.price}
                   </td>
                   <td className="px-6 py-4">
-                    <Link href={`/restaurant/edit_food/${item._id}`} className="bg-green-500 p-2 text-white">Edit</Link>
+                    <Link href={`/restaurant/edit_food/${item?._id}`} className="bg-green-500 p-2 text-white">Edit</Link>
                     &nbsp;
-                    <button onClick={() => deleteItem(item._id)} className="bg-red-500 p-2 text-white">Delete</button>
+                    <button onClick={() => deleteItem(item?._id)} className="bg-red-500 p-2 text-white">Delete</button>
                   </td>
                 </tr>
               )

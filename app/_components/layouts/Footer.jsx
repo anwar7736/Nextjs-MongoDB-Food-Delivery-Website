@@ -2,7 +2,7 @@ const Footer = () => {
   return (
     <div>
         <h4 className="footer-header">
-            All Rights Reserved &copy; 2024
+        &copy; { new Date().getFullYear() } All Rights Reserved by Md Anwar Hossain
         </h4>
     </div>
   )
