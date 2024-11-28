@@ -1,20 +1,22 @@
 "use client";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { CartContext } from "@/app/contexts/CartContext";
-import { isRestaurantAuth, restaurant_auth, session_destroy } from "@/app/helpers/helper"
+import { UserAuthContext } from "@/app/contexts/UserAuthContext";
+import { restaurant_auth, user_auth} from "@/app/helpers/helper"
 import cogoToast from "cogo-toast-react-17-fix";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import Swal from "sweetalert2";
 const Header = () => {
     const {auth, setAuth} = useContext(AuthContext);
+    const {user, setUser} = useContext(UserAuthContext);
     const {cart, setCart} = useContext(CartContext);
     const router = useRouter();
     console.log(cart);
     
-    const restaurantLogout = async () => {
+    const Logout = async (type) => {
         Swal.fire({
             title: "Are you sure?",
             text: "You will be logged out now!",
@@ -27,10 +29,23 @@ const Header = () => {
           }).then(async (result) => {
             if (result.isConfirmed) 
             {
-                deleteCookie('restaurant_auth');
-                setAuth(restaurant_auth());
+                if(type == 1)
+                {
+                  deleteCookie('user_auth');
+                  setUser(user_auth());
+                }
+                else if(type == 2)
+                {
+                  deleteCookie('restaurant_auth');
+                  setAuth(restaurant_auth());
+                }
+                else if(type == 3)
+                {
+                  deleteCookie('delivery_auth');
+                  setUser(restaurant_auth());
+                }
+                
                 cogoToast.success('Logout successfully.');
-                router.refresh();
                 router.push('/');
             }
           });
@@ -78,25 +93,39 @@ const Header = () => {
         <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><a href='#'
             className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Profile</a>
         </li>
-        <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><a href='#'
-            className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Cart <small className="text-red-600">({cart.length})</small></a>
+        <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><Link href="/cart"
+            className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Cart <small className="text-red-600">({cart.length})</small></Link>
         </li>
       </ul>
     </div>
+    {
+        user ? 
+        (
+            <button
+            onClick={() => Logout(1)}
+            className='px-4 py-2 text-sm rounded-full font-bold text-white border-2 border-red bg-red-500 transition-all ease-in-out duration-300 hover:bg-transparent hover:text-[#007bff]'>Logout</button>
+        )  
+        : 
+        (
+            <Link
+            href="/user"
+            className='px-4 py-2 text-sm rounded-full font-bold text-white border-2 border-[#007bff] bg-[#007bff] transition-all ease-in-out duration-300 hover:bg-transparent hover:text-[#007bff]'>Login</Link>
+        )
+      }
 
     <div className='flex max-lg:ml-auto space-x-3'>
       {
         auth ? 
         (
             <button
-            onClick={() => restaurantLogout()}
+            onClick={() => Logout(2)}
             className='px-4 py-2 text-sm rounded-full font-bold text-white border-2 border-red bg-red-500 transition-all ease-in-out duration-300 hover:bg-transparent hover:text-[#007bff]'>Logout</button>
         )  
         : 
         (
             <Link
             href="/restaurant"
-            className='px-4 py-2 text-sm rounded-full font-bold text-white border-2 border-[#007bff] bg-[#007bff] transition-all ease-in-out duration-300 hover:bg-transparent hover:text-[#007bff]'>Login</Link>
+            className='px-4 py-2 text-sm rounded-full font-bold text-white border-2 border-[#007bff] bg-[#007bff] transition-all ease-in-out duration-300 hover:bg-transparent hover:text-[#007bff]'>Become a Partner</Link>
         )
       }
 

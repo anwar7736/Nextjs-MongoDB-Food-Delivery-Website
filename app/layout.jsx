@@ -4,6 +4,7 @@ import Header from "./_components/layouts/Header";
 import Footer from "./_components/layouts/Footer";
 import AuthContextProvider from "./contexts/AuthContext";
 import CartContextProvider from "./contexts/CartContext";
+import UserAuthContextProvider from "./contexts/UserAuthContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,11 +29,13 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <CartContextProvider>
-          <AuthContextProvider>
-            <Header />
+          <UserAuthContextProvider>
+            <AuthContextProvider>
+              <Header />
               {children}
-            <Footer />
-          </AuthContextProvider>
+              <Footer />
+            </AuthContextProvider>
+          </UserAuthContextProvider>
         </CartContextProvider>
       </body>
     </html>

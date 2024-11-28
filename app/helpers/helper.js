@@ -37,3 +37,13 @@ export const isRestaurantAuth = () =>
 {
     return hasCookie('restaurant_auth') ? true : false;
 }
+
+export const user_auth = () => 
+{
+    return isUserAuth() ? JSON.parse(getCookie('user_auth')) : '';
+}
+
+export const isUserAuth = () => 
+{
+    return hasCookie('user_auth') ? true : false;
+}

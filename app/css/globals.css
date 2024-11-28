@@ -158,6 +158,28 @@ body {
   border-radius: 5px;
 }
 
+.shopping-btn {
+  color: #fff;
+  background-color: rgb(9, 228, 137);
+  border: 0;
+  padding: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+  border-radius: 5px;
+
+}
+
+.order-now-btn {
+  color: #fff;
+  background-color: black;
+  border: 0;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 5px;
+  border-radius: 5px;
+
+}
+
 .food-list-wrapper .list-item .remove_button {
   color: #fff;
   background-color: red;
