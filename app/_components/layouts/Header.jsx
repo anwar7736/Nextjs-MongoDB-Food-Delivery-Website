@@ -1,5 +1,6 @@
 "use client";
 import { AuthContext } from "@/app/contexts/AuthContext";
+import { CartContext } from "@/app/contexts/CartContext";
 import { isRestaurantAuth, restaurant_auth, session_destroy } from "@/app/helpers/helper"
 import cogoToast from "cogo-toast-react-17-fix";
 import { deleteCookie } from "cookies-next";
@@ -9,7 +10,9 @@ import { useContext, useEffect, useState } from "react";
 import Swal from "sweetalert2";
 const Header = () => {
     const {auth, setAuth} = useContext(AuthContext);
+    const {cart, setCart} = useContext(CartContext);
     const router = useRouter();
+    console.log(cart);
     
     const restaurantLogout = async () => {
         Swal.fire({
@@ -76,7 +79,7 @@ const Header = () => {
             className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Profile</a>
         </li>
         <li className='max-lg:border-b border-gray-300 max-lg:py-3 px-3'><a href='#'
-            className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Cart <small className="text-red-600">(0)</small></a>
+            className='hover:text-[#007bff] text-gray-500 block font-semibold text-[15px]'>Cart <small className="text-red-600">({cart.length})</small></a>
         </li>
       </ul>
     </div>

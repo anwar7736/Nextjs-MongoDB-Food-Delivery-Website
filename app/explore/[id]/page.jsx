@@ -1,10 +1,15 @@
 "use client";
-import { useEffect, useState } from "react";
+import { CartContext } from "@/app/contexts/CartContext";
+import { session, session_destroy } from "@/app/helpers/helper";
+import { useContext, useEffect, useState } from "react";
 
 const Explore = (props) => {
     const _id = props.params.id;
+    const {cart, setCart} = useContext(CartContext);
     const [restaurantDetails, setRestaurantDetails] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
+    const [cartIds, setCartIds] = useState(cart ? () => cart.map(item => item._id) : [] );
+
     const getRestaurantDetails = async () =>
     {
       let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${_id}`);
@@ -16,10 +21,48 @@ const Explore = (props) => {
         
       }
     }
+    const addToCart = (item) => {
+      if(cart.length > 0)
+      {
+        if(cart[0].restaurant_id != item.restaurant_id)
+        {
+          session_destroy('cart');
+        }
+
+        let cartItems = session('cart');
+        cartItems.push(item);
+        session('cart', cartItems);
+      }
+      else{
+        session('cart', [item]);
+      }
+
+      let storedCartIds = cartIds;
+      storedCartIds.push(item._id);
+      setCartIds(storedCartIds);
+      setCart(session('cart'));
+    }
+
+    const removeFromCart = (id) => {
+      let cartItems = cart.filter(item => item._id != id);
+      if(cartItems.length > 0)
+      {
+        session('cart', cartItems);
+      }
+      else {
+        session_destroy('cart');
+      }
+
+      let storedCartIds = cartIds.filter(item => item != id);
+      setCartIds(storedCartIds);
+      setCart(session('cart'));
+    }
+
     useEffect(()=>{
       getRestaurantDetails();
       
     }, []);
+
   return (
     <div>
         <div className="restaurant-page-banner">
@@ -34,7 +77,7 @@ const Explore = (props) => {
         <div className="food-list-wrapper">
           {
               foodItems.length > 0 ? foodItems.map((item) => (
-                  <div className="list-item">
+                  <div className="list-item" key={item._id}>
                       <div><img style={{ width: 100 }} src={item.image} /></div>
 
                       <div>
@@ -42,10 +85,11 @@ const Explore = (props) => {
                           <div>{item.price}</div>
                           <div className="description">{item.description}</div>
                           {
-                              // cartIds.includes(item._id) ?
-                                  // <button  onClick={()=>removeFromCart(item._id)} >Remove From Cart</button>
-                                  <button className="">Add to Cart</button>
-
+                              cartIds.includes(item._id)
+                              ? 
+                              (<button className="remove_button" onClick={()=> removeFromCart(item._id)}>Remove From Cart</button>)
+                              :
+                              (<button className="add_button" onClick={()=> addToCart(item)}>Add to Cart</button>)
                           }
 
                       </div>

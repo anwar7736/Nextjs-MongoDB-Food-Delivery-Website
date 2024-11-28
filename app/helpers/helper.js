@@ -14,7 +14,7 @@ export const session = (key, value = "") =>
         return localStorage.setItem(key, JSON.stringify(value));
     }
     else{
-        return localStorage.getItem(key) != null ? JSON.parse(localStorage.getItem(key)) : '';
+        return localStorage.getItem(key) != null ? JSON.parse(localStorage.getItem(key)) : [];
     }
 }
 

@@ -148,11 +148,21 @@ body {
   font-weight: lighter;
 }
 
-.food-list-wrapper .list-item button {
+.food-list-wrapper .list-item .add_button {
   color: #fff;
   background-color: orange;
   border: 0;
-  padding: 10px;
+  padding: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.food-list-wrapper .list-item .remove_button {
+  color: #fff;
+  background-color: red;
+  border: 0;
+  padding: 5px;
   cursor: pointer;
   margin-top: 5px;
   border-radius: 5px;
