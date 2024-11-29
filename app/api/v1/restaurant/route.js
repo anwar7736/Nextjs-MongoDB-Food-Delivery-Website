@@ -3,16 +3,15 @@ import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
 
 
+mongoDB_connect();
 export async function GET()
 {
-    mongoDB_connect();
     const data  = await restaurantSchema.find();
     return NextResponse.json({success: true, data});
 }
 
 export async function POST(request)
 {
-    mongoDB_connect();
     let payload = await request.json();
     let success = false;
     let data = [];

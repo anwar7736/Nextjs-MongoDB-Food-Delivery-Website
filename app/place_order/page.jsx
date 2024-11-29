@@ -1,11 +1,14 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { CartContext } from "../contexts/CartContext";
-import { isUserAuth, session, session_destroy } from "../helpers/helper";
+import { isUserAuth, session, session_destroy, user_auth } from "../helpers/helper";
 import Link from "next/link";
 import withUserAuth from "../hoc/withUserAuth";
+import cogoToast from "cogo-toast-react-17-fix";
+import { useRouter } from "next/navigation";
 
 const PlaceOrder = () => {
+    const router = useRouter();
     const { cart, setCart } = useContext(CartContext);
     const [subTotal, setSubTotal] = useState(0);
     const [shippingCharge, setShippingCharge] = useState(50);
@@ -26,6 +29,36 @@ const PlaceOrder = () => {
         }
 
         setCart(session('cart'));
+    }
+    const orderSubmit = async () => {
+        let data = {
+            "user_id": user_auth()._id,
+            "restaurant_id":cart[0].restaurant_id,
+            "total": subTotal,
+            "shipping_charge": shippingCharge,
+            "items": []
+        };
+
+        cart.map(item=>{
+            data.items.push({
+                "id": item._id,
+                "quantity": 1,
+                "price": item.price,
+            })
+        });
+        
+        let res = await fetch("/api/v1/order", {
+            method: "POST", 
+            body: JSON.stringify(data)
+        });
+        res = await res.json();
+        if(res.success)
+        {
+            session_destroy('cart');
+            setCart(session('cart'));
+            cogoToast.success(res.message);
+            router.push('/user/dashboard');
+        }
     }
     return (
         <div>
@@ -68,7 +101,7 @@ const PlaceOrder = () => {
                         <p><b>Total Amount:</b>{subTotal + shippingCharge}</p>
                     </div>
                     <div align="left" className=" mt-3">
-                        <Link href="/" className="order-now-btn">Plce Order</Link>
+                        <button onClick={()=> orderSubmit()} className="order-now-btn">Plce Order</button>
                     </div>
                 </div>
                 

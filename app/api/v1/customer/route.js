@@ -1,6 +1,8 @@
+import { mongoDB_connect } from "@/app/helpers/helper";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
 
+mongoDB_connect();
 export async function GET(request)
 {
     const queryParams = request.nextUrl.searchParams;

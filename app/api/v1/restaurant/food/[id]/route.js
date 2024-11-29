@@ -2,12 +2,12 @@ import { mongoDB_connect } from "@/app/helpers/helper";
 import { foodSchema } from "@/app/models/foodModel";
 import { NextResponse } from "next/server";
 
+mongoDB_connect();
 export async function GET(request, content)
 {
     let _id = content.params.id;
     let success = false;
     let data = [];
-    mongoDB_connect();
     data = await foodSchema.findOne({_id});
     if(data)
     {
@@ -24,7 +24,6 @@ export async function PUT(request, content)
     let data = [];
     let message = "";
     request = await request.json();
-    mongoDB_connect();
     data = await foodSchema.findOneAndUpdate({_id}, {$set: request});
     if(data)
     {
@@ -42,7 +41,6 @@ export async function DELETE(request, content)
     let success = false;
     let data = [];
     let message = "";
-    mongoDB_connect();
     data = await foodSchema.deleteOne({_id});
     if(data)
     {

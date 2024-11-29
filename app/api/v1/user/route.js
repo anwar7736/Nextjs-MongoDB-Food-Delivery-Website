@@ -2,9 +2,9 @@ import { mongoDB_connect } from "@/app/helpers/helper";
 import { userSchema } from "@/app/models/userModel";
 import { NextResponse } from "next/server";
 
+mongoDB_connect();
 export async function POST(request)
 {
-    mongoDB_connect();
     let payload = await request.json();
     let success = false;
     let data = [];
