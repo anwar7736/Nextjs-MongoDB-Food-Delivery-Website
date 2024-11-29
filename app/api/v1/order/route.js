@@ -1,7 +1,9 @@
 import { mongoDB_connect, user_auth } from "@/app/helpers/helper";
+import { deliverySchema } from "@/app/models/deliveryModel";
 import { orderItemSchema } from "@/app/models/orderItemModel";
 import { orderSchema } from "@/app/models/orderModel";
 import { orderStatusLogSchema } from "@/app/models/orderStatusLogModel";
+import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
 
 mongoDB_connect();
@@ -12,9 +14,16 @@ export async function POST(request)
     request = await request.json();
     const invoiceNo = `INV-${Math.floor(100000 + Math.random() * 900000)}`;
     const date = new Date().toLocaleDateString();
+    let restaurant = await restaurantSchema.findOne({_id:request.restaurant_id});
+        restaurant = await restaurant.json();
+    let deliveries = await deliverySchema.find({city:restaurant.city});
+        deliveries = await deliveries.json();
+    let randomIndex = Math.floor(Math.random() * deliveries.length);
+    let delivery_partner_id = deliveries ? deliveries[randomIndex]._id : "";
     let orderInput = {
         "user_id": request.user_id,
         "restaurant_id": request.restaurant_id,
+        "delivery_partner_id": delivery_partner_id,
         "date": date,
         "invoice_no": invoiceNo,
         "total": request.total,

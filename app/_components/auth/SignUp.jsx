@@ -3,12 +3,16 @@ import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "../ValidationError";
-import { setCookie } from "cookies-next";
+import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper";
+import { deleteCookie, setCookie } from "cookies-next";
 import { AuthContext } from "@/app/contexts/AuthContext";
-import { restaurant_auth } from "@/app/helpers/helper";
+import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
+import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 const SignUp = () => {
   const router = useRouter();
   const {auth, setAuth} = useContext(AuthContext);
+  const {user, setUser} = useContext(UserAuthContext);
+  const {delivery, setDelivery} = useContext(DeliveryAuthContext);
   const {
     register,
     handleSubmit,
@@ -27,6 +31,10 @@ const SignUp = () => {
     if(res.success)
     {
         delete res.data.password;
+        deleteCookie('user_auth');
+        setUser(user_auth());
+        deleteCookie('delivery_auth');
+        setDelivery(delivery_auth());
         setCookie('restaurant_auth', JSON.stringify(res.data));
         setAuth(restaurant_auth());
         router.push("/restaurant/dashboard");

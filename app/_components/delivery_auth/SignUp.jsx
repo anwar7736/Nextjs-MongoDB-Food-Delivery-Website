@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "../ValidationError";
-import { delivery_auth, restaurant_auth, user_auth, session } from "@/app/helpers/helper";
+import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper";
 import { deleteCookie, setCookie } from "cookies-next";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
@@ -22,7 +22,7 @@ const SignUp = () => {
 
   const signupFormHandler = async (data) => {
     data.login = false;
-    let res = await fetch("api/v1/user", {
+    let res = await fetch("api/v1/delivery", {
         method: "POST",
         body: JSON.stringify(data)
     });
@@ -31,18 +31,13 @@ const SignUp = () => {
     if(res.success)
     {
         delete res.data.password;
-        deleteCookie('delivery_auth');
-        setUser(delivery_auth());
+        deleteCookie('user_auth');
+        setUser(user_auth());
         deleteCookie('restaurant_auth');
         setAuth(restaurant_auth());
-        setCookie('user_auth', JSON.stringify(res.data));
-        setUser(user_auth());
-        let redirectUrl = "/user/dashboard";
-        if(session('redirect_url').length > 0)
-        {
-            redirectUrl = session('redirect_url');
-            session_destroy('redirect_url');
-        }
+        setCookie('delivery_auth', JSON.stringify(res.data));
+        setDelivery(delivery_auth());
+        let redirectUrl = "/delivery/dashboard";
         router.push(redirectUrl);
         toast.success(res.message);
     }
@@ -54,7 +49,7 @@ const SignUp = () => {
 
   return (
     <div align="center">
-      <h2 className="font-bold">Registration</h2>
+      <h2 className="font-bold">Delivery Partner Registration</h2>
       <div className="w-full max-w-xs">
         <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={ handleSubmit(signupFormHandler)}>
           <div className="mb-4">
@@ -73,6 +68,26 @@ const SignUp = () => {
             </label>
             <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", { required: 'Provide a valid phone number.', pattern: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/ } ) } />
             {errors.phone && <ValidationError message={errors.phone.message} />}
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="city">
+              City
+            </label>
+            <select name="city" id="city" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" {...register("city", { required: 'This field is required' })} >
+              <option value="">Select Any City</option>
+              <option value="Dhaka">Dhaka</option>
+              <option value="Chattogram">Chattogram</option>
+              <option value="Khulna">Khulna</option>
+              <option value="Rajshahi">Rajshahi</option>
+              <option value="Sylhet">Sylhet</option>
+              <option value="Barishal">Barishal</option>
+              <option value="Rangpur">Rangpur</option>
+              <option value="Mymensingh">Mymensingh</option>
+              <option value="Comilla">Comilla</option>
+              <option value="Narayanganj">Narayanganj</option>
+              <option value="Gazipur">Gazipur</option>
+            </select>
+            {errors.city && <ValidationError message={errors.city.message} />}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="address">

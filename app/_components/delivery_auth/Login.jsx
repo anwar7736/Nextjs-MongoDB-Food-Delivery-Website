@@ -22,7 +22,7 @@ const Login = () => {
     const loginFormHandler = async (data) => {
         data.login = true;
 
-        let res = await fetch("api/v1/restaurant", {
+        let res = await fetch("api/v1/delivery", {
             method: "POST",
             body: JSON.stringify(data)
         });
@@ -33,11 +33,12 @@ const Login = () => {
             delete res.data.password;
             deleteCookie('user_auth');
             setUser(user_auth());
-            deleteCookie('delivery_auth');
-            setDelivery(delivery_auth());
-            setCookie('restaurant_auth', JSON.stringify(res.data));
+            deleteCookie('restaurant_auth');
             setAuth(restaurant_auth());
-            router.push("/restaurant/dashboard");
+            setCookie('delivery_auth', JSON.stringify(res.data));
+            setDelivery(delivery_auth());
+            let redirectUrl = "/delivery/dashboard";
+            router.push(redirectUrl);
             toast.success("Login Successfully");
         }
         else{
@@ -47,15 +48,15 @@ const Login = () => {
     }
     return (
         <div align="center">
-            <h2 className="font-bold">Restaurant Login</h2>
+            <h2 className="font-bold">Delivery Partner Login</h2>
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(loginFormHandler)}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
-                            Email
+                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="phone">
+                            Phone
                         </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: 'This field is required' })}/>
-                        {errors.email && <ValidationError message={errors.email.message} />}
+                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="phone" placeholder="Phone" {...register("phone", { required: 'This field is required' })}/>
+                        {errors.phone && <ValidationError message={errors.phone.message} />}
                         
                     </div>
                     <div className="mb-6">

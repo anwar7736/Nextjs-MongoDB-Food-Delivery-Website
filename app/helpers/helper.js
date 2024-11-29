@@ -47,3 +47,13 @@ export const isUserAuth = () =>
 {
     return hasCookie('user_auth') ? true : false;
 }
+
+export const delivery_auth = () => 
+{
+    return isDeliveryAuth() ? JSON.parse(getCookie('delivery_auth')) : '';
+}
+
+export const isDeliveryAuth = () => 
+{
+    return hasCookie('delivery_auth') ? true : false;
+}
