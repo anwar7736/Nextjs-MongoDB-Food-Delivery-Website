@@ -9,6 +9,7 @@ const orderModel = new mongoose.Schema({
     "total": Number,
     "shipping_charge": Number,
     "final_total": Number,
+    "status_id": mongoose.Schema.Types.ObjectId,
 });
 
 export const orderSchema = mongoose.models.orders

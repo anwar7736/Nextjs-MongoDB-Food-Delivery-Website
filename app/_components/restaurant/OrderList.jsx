@@ -1,13 +1,12 @@
 "use client";
-import { dateFormat, delivery_auth } from "@/app/helpers/helper";
-import withDeliveryAuth from "@/app/hoc/withDeliveryAuth";
+import { dateFormat, restaurant_auth } from "@/app/helpers/helper";
 import { useState, useEffect } from "react"
 
-const Dashboard = () => {
+const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const getOrderList = async () => {
-    const user = await delivery_auth();
-    let res = await fetch(`/api/v1/order?type=delivery&id=${user._id}`)
+    const user = await restaurant_auth();
+    let res = await fetch(`/api/v1/order?type=restaurant&id=${user._id}`)
     res = await res.json();
 
     if (res.success) {
@@ -21,7 +20,6 @@ const Dashboard = () => {
   }, []);
   return (
     <div align="center">
-      <title>Delivery Partner Dashboard</title>
       <div>
         <h4 className="m-3">All Order List</h4>
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -35,10 +33,10 @@ const Dashboard = () => {
                   Invoice No
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Restaurant Details
+                  Customer Details
                 </th>
                 <th scope="col" className="px-6 py-3">
-                  Customer Details
+                  Delivery Partner Details
                 </th>
                 <th scope="col" className="px-6 py-3">
                   Total
@@ -68,14 +66,14 @@ const Dashboard = () => {
                       {order?.invoice_no}
                     </td>
                     <td className="px-6 py-4">
-                      {order?.restaurant[0]?.name} <br />
-                      {order?.restaurant[0]?.phone} <br />
-                      {order?.restaurant[0]?.address}
-                    </td>
-                    <td className="px-6 py-4">
                       {order?.user[0]?.name} <br />
                       {order?.user[0]?.phone} <br />
-                      {order?.user[0]?.address} <br />
+                      {order?.user[0]?.address}
+                    </td>
+                    <td className="px-6 py-4">
+                      {order?.delivery[0]?.name} <br />
+                      {order?.delivery[0]?.phone} <br />
+                      {order?.delivery[0]?.address} <br />
                     </td>
                     <td>
                       {order?.total}
@@ -92,6 +90,7 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
+                      <button className="bg-blue-500 p-2 text-white">View</button>
                       <button className="bg-gray-500 p-2 text-white">Print</button>
                     </td>
                   </tr>
@@ -106,4 +105,4 @@ const Dashboard = () => {
   )
 }
 
-export default withDeliveryAuth(Dashboard)
+export default OrderList

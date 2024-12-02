@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import toast from 'cogo-toast-react-17-fix';
 import { useRouter } from 'next/navigation'
 import ValidationError from "../ValidationError";
-import { delivery_auth, restaurant_auth, user_auth, session } from "@/app/helpers/helper";
+import { delivery_auth, restaurant_auth, user_auth, session, session_destroy } from "@/app/helpers/helper";
 import { deleteCookie, setCookie } from "cookies-next";
 import { useContext } from "react";
 import { AuthContext } from "@/app/contexts/AuthContext";

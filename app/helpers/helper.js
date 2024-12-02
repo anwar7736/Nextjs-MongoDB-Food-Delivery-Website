@@ -57,3 +57,16 @@ export const isDeliveryAuth = () =>
 {
     return hasCookie('delivery_auth') ? true : false;
 }
+
+export const dateFormat = (date) =>
+{
+    if(date)
+    {
+        return new Date(date).toLocaleDateString("en-US", { 
+            year: "numeric", 
+            month: "long", 
+            day: "numeric" 
+          });
+    }
+    else return "";
+}
