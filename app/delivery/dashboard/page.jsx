@@ -2,9 +2,13 @@
 import { dateFormat, delivery_auth } from "@/app/helpers/helper";
 import withDeliveryAuth from "@/app/hoc/withDeliveryAuth";
 import { useState, useEffect } from "react"
+import InvoiceModal from "@/app/_components/order/InvoiceModal";
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
+  const [order, setOrder] = useState([]);
+  const [isModalOpen, setModalOpen] = useState(false);
+
   const getOrderList = async () => {
     const user = await delivery_auth();
     let res = await fetch(`/api/v1/order?type=delivery&id=${user._id}`)
@@ -16,13 +20,22 @@ const Dashboard = () => {
     }
 
   }
+  const showInvoice = async (id) => {
+    let res = await fetch(`/api/v1/order/${id}`)
+    res = await res.json();
+
+    if (res.success) {
+      setOrder(res.data[0]);
+      setModalOpen(true);
+    }
+  }
   useEffect(() => {
     getOrderList();
   }, []);
   return (
     <div align="center">
       <title>Delivery Partner Dashboard</title>
-      <div>
+      <div className="no-print">
         <h4 className="m-3">All Order List</h4>
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -92,7 +105,7 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="bg-gray-500 p-2 text-white">Print</button>
+                    <button className="bg-black p-2 text-white rounded" onClick={() => showInvoice(order?._id)}>View</button>
                     </td>
                   </tr>
                 )
@@ -102,6 +115,11 @@ const Dashboard = () => {
           </table>
         </div>
       </div>
+      <InvoiceModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        data={order}
+      />
     </div>
   )
 }

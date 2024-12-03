@@ -1,9 +1,14 @@
 "use client";
 import { dateFormat, restaurant_auth } from "@/app/helpers/helper";
 import { useState, useEffect } from "react"
+import InvoiceModal from "@/app/_components/order/InvoiceModal";
+import Swal from "sweetalert2";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
+  const [order, setOrder] = useState([]);
+  const [isModalOpen, setModalOpen] = useState(false);
+
   const getOrderList = async () => {
     const user = await restaurant_auth();
     let res = await fetch(`/api/v1/order?type=restaurant&id=${user._id}`)
@@ -15,12 +20,50 @@ const OrderList = () => {
     }
 
   }
+  const showInvoice = async (id) => {
+    let res = await fetch(`/api/v1/order/${id}`)
+    res = await res.json();
+
+    if (res.success) {
+      setOrder(res.data[0]);
+      setModalOpen(true);
+    }
+  }
+
+  const deleteItem = async (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        let res = await fetch(`/api/v1/order/${id}`, {
+          method: "DELETE"
+        })
+        res = await res.json();
+        if (res.success) {
+          getOrderList();
+          Swal.fire({
+            title: "Deleted!",
+            text: res.message,
+            icon: "success"
+          });
+        }
+
+      }
+    });
+  }
+  
   useEffect(() => {
     getOrderList();
   }, []);
   return (
     <div align="center">
-      <div>
+      <div className="no-print">
         <h4 className="m-3">All Order List</h4>
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -89,9 +132,12 @@ const OrderList = () => {
                         {order?.status[0]?.name}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <button className="bg-blue-500 p-2 text-white">View</button>
-                      <button className="bg-gray-500 p-2 text-white">Print</button>
+                    <td className="px-6 py-4 flex justify-between" >
+                    <button className="bg-black p-2 text-white rounded" onClick={() => showInvoice(order?._id)}>View</button>
+                    &nbsp;
+                    <button className="bg-green-600 p-2 text-white rounded">Edit</button>
+                    &nbsp;
+                    <button className="bg-red-600 p-2 text-white rounded" onClick={() => deleteItem(order?._id)}>Delete</button>
                     </td>
                   </tr>
                 )
@@ -101,6 +147,11 @@ const OrderList = () => {
           </table>
         </div>
       </div>
+      <InvoiceModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        data={order}
+      />
     </div>
   )
 }

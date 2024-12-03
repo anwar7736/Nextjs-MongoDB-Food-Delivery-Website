@@ -261,3 +261,16 @@ body {
   text-align: center;
   position: relative;
 }
+
+@media print
+{    
+    .no-print, .no-print *
+    {
+        display: none !important;
+        
+    }
+
+    .print-container {
+      margin-bottom: 500px !important;
+    }
+}

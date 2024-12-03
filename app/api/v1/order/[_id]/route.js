@@ -5,13 +5,13 @@ import mongoose from "mongoose";
 import { orderItemSchema } from "@/app/models/orderItemModel";
 mongoDB_connect();
 export async function GET(request, { params }) {
-  let { id } = params;
+  let { _id } = params;
   let success = false;
   let data = [];
   data = await orderSchema.aggregate([
     {
       $match: {
-        _id: new mongoose.Types.ObjectId(id),
+        _id: new mongoose.Types.ObjectId(_id),
       }
     },
     {
@@ -71,7 +71,7 @@ export async function GET(request, { params }) {
     {
       $group: {
         _id: "$_id",
-        order_id: { $first: "$date" },
+        date: { $first: "$date" },
         invoice_no: { $first: "$invoice_no" },
         total: { $first: "$total" },
         shipping_charge: { $first: "$shipping_charge" },
@@ -82,9 +82,10 @@ export async function GET(request, { params }) {
         status: { $first: "$status" },
         order_details: {
           $push: {
-            food: "$order_details.food.name",
+            name: "$order_details.food.name",
             quantity: "$order_details.quantity",
-            price: "$order_details.price"
+            price: "$order_details.price",
+            total: "$order_details.total",
           }
         }
       }

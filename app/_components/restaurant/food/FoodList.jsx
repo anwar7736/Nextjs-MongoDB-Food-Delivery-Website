@@ -82,10 +82,10 @@ const FoodList = () => {
                   <td className="px-6 py-4">
                     ${item?.price}
                   </td>
-                  <td className="px-6 py-4">
-                    <Link href={`/restaurant/edit_food/${item?._id}`} className="bg-green-500 p-2 text-white">Edit</Link>
+                  <td className="px-6 py-4 flex" >
+                    <Link href={`/restaurant/edit_food/${item?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
                     &nbsp;
-                    <button onClick={() => deleteItem(item?._id)} className="bg-red-500 p-2 text-white">Delete</button>
+                    <button onClick={() => deleteItem(item?._id)} className="bg-red-600 p-2 text-white rounded">Delete</button>
                   </td>
                 </tr>
               )
