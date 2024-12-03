@@ -1,4 +1,4 @@
-import { mongoDB_connect } from "@/app/helpers/helper";
+import { mongoDB_connect, restaurant_auth } from "@/app/helpers/helper";
 import { deliverySchema } from "@/app/models/deliveryModel";
 import { NextResponse } from "next/server";
 
@@ -39,4 +39,19 @@ export async function POST(request)
     }
 
     return NextResponse.json({success, message, data});
+}
+
+export async function GET(request)
+{
+    let success = false;
+    let data = [];
+    const queryParams = request.nextUrl.searchParams;
+    const city    = queryParams.get('city');
+    data = await deliverySchema.find({city: { $regex: new RegExp(city, 'i') }});
+    if(data)
+    {
+        success = true;
+    }
+
+    return NextResponse.json({success, data});
 }

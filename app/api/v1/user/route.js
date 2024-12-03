@@ -40,3 +40,16 @@ export async function POST(request)
 
     return NextResponse.json({success, message, data});
 }
+
+export async function GET(request)
+{
+    let success = false;
+    let data = [];
+    data = await userSchema.find();
+    if(data)
+    {
+        success = true;
+    }
+
+    return NextResponse.json({success, data});
+}

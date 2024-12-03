@@ -18,7 +18,7 @@ export async function POST(request)
     let restaurant = await restaurantSchema.findOne({_id:request.restaurant_id});
     let deliveries = await deliverySchema.find({city:restaurant.city});
     let randomIndex = Math.floor(Math.random() * deliveries.length);
-    let delivery_partner_id = deliveries ? deliveries[randomIndex]._id : "";
+    let delivery_partner_id = request.delivery_partner_id ?? deliveries ? deliveries[randomIndex]._id : "";
     let orderInput = {
         "user_id": request.user_id,
         "restaurant_id": restaurant._id,
@@ -28,7 +28,7 @@ export async function POST(request)
         "total": request.total,
         "shipping_charge": request.shipping_charge,
         "final_total": (request.total + request.shipping_charge),
-        "status_id": "674436ad7f3f886666bb47a7", //Pending
+        "status_id": request.status_id ?? "674436ad7f3f886666bb47a7", //Admin defined or Pending
     };
 
     let order = await orderSchema(orderInput);
@@ -51,7 +51,7 @@ export async function POST(request)
             {
                 let statusLogInput = {
                     "order_id": order._id,
-                    "status_id": "674436ad7f3f886666bb47a7", //Pending
+                    "status_id": request.status_id ?? "674436ad7f3f886666bb47a7", //Admin defined or Pending
                     "date": date
                 };
 

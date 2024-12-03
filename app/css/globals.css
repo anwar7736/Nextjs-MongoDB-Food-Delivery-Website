@@ -274,3 +274,14 @@ body {
       margin-bottom: 500px !important;
     }
 }
+
+input.onlyNumber::-webkit-inner-spin-button, 
+input.onlyNumber::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* For Firefox */
+input.onlyNumber {
+    -moz-appearance: textfield;
+}
