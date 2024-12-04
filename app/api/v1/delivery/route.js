@@ -1,6 +1,7 @@
 import { mongoDB_connect, restaurant_auth } from "@/app/helpers/helper";
 import { deliverySchema } from "@/app/models/deliveryModel";
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 mongoDB_connect();
 export async function POST(request)
@@ -12,12 +13,18 @@ export async function POST(request)
     if(payload.login)
     {
         delete payload.login;
-        let res = await deliverySchema.findOne(payload);
-        if(res)
+        data = await deliverySchema.findOne({phone:payload.phone});
+        if(data)
         {
-            message = 'Login Successfully';
-            data = res;
-            success = true;
+            const passwordMatched = await bcrypt.compare(payload.password, data.password);
+            if(passwordMatched)
+            {
+                message = 'Login Successfully';
+                success = true;
+            }
+            else{
+                message = 'Password did not matched';
+            }
         }
     }
     else{
@@ -30,6 +37,7 @@ export async function POST(request)
             success = false;
         }
         else{
+            payload.password = await bcrypt.hash(payload.password, 10);
             let res = await new deliverySchema(payload);
             res = await res.save();
             message = 'Registration Successfully';

@@ -6,14 +6,14 @@ import ValidationError from "@/app/_components/ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 import withAuth from "@/app/hoc/withAuth";
 import { useEffect, useState } from "react";
-const PlaceOrder = (props) => {
+const PlaceOrder = () => {
     const router = useRouter();
     const [customers, setCustomers] = useState([]);
     const [deliveries, setDeliveries] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
-    const [rows, setRows] = useState([{ id: 1, quantity:1, price:0 }]);
-    const [summary, setSummary] = useState({total:0, shipping_charge:50, final_total:0});
+    const [rows, setRows] = useState([{ id: "", quantity: 0, price: 0 }]);
+    const [summary, setSummary] = useState({ total: 0, shipping_charge: 50, final_total: 0 });
     const {
         register,
         handleSubmit,
@@ -24,6 +24,15 @@ const PlaceOrder = (props) => {
     const submitFormHandler = async (data) => {
         const restaurant = await restaurant_auth();
         data.restaurant_id = restaurant._id;
+        data.total = summary.total;
+        data.shipping_charge = summary.shipping_charge;
+        data.final_total = summary.final_total;
+        data.items = rows.filter(row => row.id != '' && row.quantity > 0 && row.price > 0);
+        if(data.items.length == 0)
+            {
+                toast.error('Please choose atleast one item!');
+                return;
+            }
         let res = await fetch("/api/v1/order", {
             method: "POST",
             body: JSON.stringify(data)
@@ -31,8 +40,8 @@ const PlaceOrder = (props) => {
 
         res = await res.json();
         if (res.success) {
-            props.setStatus(1);
             toast.success(res.message);
+            router.push('/restaurant/dashboard');
         }
         else {
             toast.error(res.message);
@@ -41,29 +50,70 @@ const PlaceOrder = (props) => {
     }
 
     const calculateRowTotal = async () => {
-        let total = 10;
+        let total = 0;
         let shipping_charge = summary.shipping_charge;
         rows.map(row => {
             total += row.quantity * row.price;
         });
         let final_total = total + shipping_charge;
-        setSummary((prev)=>({...prev, total, shipping_charge, final_total}));
+        setSummary((prev) => ({ ...prev, total, shipping_charge, final_total }));
     }
 
     const onShippingChargeChange = (shipping_charge) => {
-        setSummary((prev)=>({...prev, shipping_charge}));
-        let final_total = ( Number(summary.total) + Number(shipping_charge));
-        setSummary((prev)=>({...prev, final_total}));
+        shipping_charge = Number(shipping_charge);
+        setSummary((prev) => ({ ...prev, shipping_charge }));
+        let final_total = (Number(summary.total) + shipping_charge);
+        setSummary((prev) => ({ ...prev, final_total }));
     }
 
     const addMoreRow = async () => {
-        setRows(prevRows => [...prevRows, { id: rows.length + 1, quantity:1, price:0 }]);
+        setRows(prevRows => [...prevRows, { id: "", quantity: 1, price: 0 }]);
         calculateRowTotal();
     }
 
-    const removeRow = async (id) => {
-        setRows(rows.filter((row) => row.id != id));
+    const removeRow = async (index) => {
+        setRows(rows.filter((row, i) => i != index));
         calculateRowTotal();
+    }
+
+    const itemChange = async (index, id) => {
+        const oldData = rows;
+        const duplicateRows = rows.filter(row => id && row.id == id)
+        const count = duplicateRows.length;
+        if (count > 0 || !id) {
+            oldData[index].id = "";
+            oldData[index].price = 0;
+            if(count > 0){
+                toast.error('Duplicate item not allowed!');
+            }
+        }
+
+        else {
+            let res = await fetch(`/api/v1/restaurant/food/${id}`);
+            res = await res.json();
+            oldData[index].id = res.data._id;
+            oldData[index].price = res.data.price;
+        }
+
+        setRows(oldData);
+        calculateRowTotal();
+
+    }
+
+    const qtyChange = async (index, value) => {
+        const oldData = rows;
+        oldData[index].quantity = Number(value);
+        setRows(oldData);
+        calculateRowTotal();
+
+    }
+
+    const priceChange = async (index, value) => {
+        const oldData = rows;
+        oldData[index].price = Number(value);
+        setRows(oldData);
+        calculateRowTotal();
+
     }
 
     const getAllCustomers = async () => {
@@ -135,7 +185,7 @@ const PlaceOrder = (props) => {
                                     ))
                                 }
                             </select>
-                            {errors.user_id && <ValidationError message={errors.name.message} />}
+                            {errors.user_id && <ValidationError message={errors.user_id.message} />}
                         </div>
                         <div className="ml-3">
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
@@ -149,7 +199,7 @@ const PlaceOrder = (props) => {
                                     ))
                                 }
                             </select>
-                            {errors.delivery_partner_id && <ValidationError message={errors.name.message} />}
+                            {errors.delivery_partner_id && <ValidationError message={errors.delivery_partner_id.message} />}
                         </div>
                         <div className="ml-3">
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
@@ -163,7 +213,7 @@ const PlaceOrder = (props) => {
                                     ))
                                 }
                             </select>
-                            {errors.status_id && <ValidationError message={errors.name.message} />}
+                            {errors.status_id && <ValidationError message={errors.status_id.message} />}
                         </div>
                     </div>
                     <div>
@@ -182,28 +232,34 @@ const PlaceOrder = (props) => {
                                     rows.map((row, index) => (
                                         <tr>
                                             <td>
-                                                <select name="item_id[0]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id}>
+                                                <select name="item_id[0]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id} onChange={(e) => itemChange(index, e.target.value)}>
                                                     <option value="" selected>Select Any Item</option>
                                                     {
-                                                        foodItems.map(item => (
-                                                            <option value={item._id} selected={item.id == row.id} >{item.name}</option>
+                                                        foodItems.map((item, i) => (
+                                                            <option key={i} value={item._id} selected={item.id == row.id} >{item.name}</option>
                                                         ))
                                                     }
                                                 </select>
                                             </td>
                                             <td>
-                                                <input type="number" name="quantity[]" value={row.quantity} className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
+                                                <input type="number" name="quantity[]" value={row.quantity}
+                                                    onChange={(e) => qtyChange(index, e.target.value)}
+                                                    className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
                                             <td>
-                                                <input type="number" name="price[]" value={row.price} className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
+                                                <input type="number" name="price[]" value={row.price}
+                                                    onChange={(e) => priceChange(index, e.target.value)}
+                                                    className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
                                             <td>
-                                                <input type="number" name="total[]" value={0} readOnly className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-
+                                                <input type="number" name="total[]"
+                                                    value={row.quantity * row.price} readOnly
+                                                    className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-
                                                 bg-gray-200 leading-tight focus:outline-none focus:shadow-outline mb-1"/>
                                             </td>
                                             <td>
                                                 {
-                                                    index != 0 && (<button type="button" className="bg-red-600 px-3 text-white rounded" onClick={() => removeRow(row.id)}>-</button>)
+                                                    index != 0 && (<button type="button" className="bg-red-600 px-3 text-white rounded" onClick={() => removeRow(index)}>-</button>)
                                                 }
                                                 &nbsp;
                                                 <button type="button" className="bg-green-600 px-3 text-white rounded" onClick={() => addMoreRow()}>+</button>
@@ -228,10 +284,10 @@ const PlaceOrder = (props) => {
                                         Shipping Charge:
                                     </th>
                                     <td>
-                                        <input type="number" id="shipping_charge" 
-                                        value={summary.shipping_charge}
-                                        onChange={(e)=>onShippingChargeChange(e.target.value)}
-                                        name="shipping_charge" className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-
+                                        <input type="number" id="shipping_charge"
+                                            value={summary.shipping_charge}
+                                            onChange={(e) => onShippingChargeChange(e.target.value)}
+                                            name="shipping_charge" className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-
                                                  leading-tight focus:outline-none focus:shadow-outline mb-1"/>
                                     </td>
                                 </tr>

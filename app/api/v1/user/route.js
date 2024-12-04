@@ -1,6 +1,7 @@
 import { mongoDB_connect } from "@/app/helpers/helper";
 import { userSchema } from "@/app/models/userModel";
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 mongoDB_connect();
 export async function POST(request)
@@ -12,12 +13,21 @@ export async function POST(request)
     if(payload.login)
     {
         delete payload.login;
-        let res = await userSchema.findOne(payload);
-        if(res)
+        data = await userSchema.findOne({phone:payload.phone});
+        if(data)
         {
-            message = 'Login Successfully';
-            data = res;
-            success = true;
+            const passwordMatched = await bcrypt.compare(payload.password, data.password);
+            if(passwordMatched)
+            {
+                message = 'Login Successfully';
+                success = true;
+            }
+            else{
+                message = 'Password did not matched';
+            }
+        }
+        else{
+            message = 'User not found';
         }
     }
     else{
@@ -30,6 +40,7 @@ export async function POST(request)
             success = false;
         }
         else{
+            payload.password = await bcrypt.hash(payload.password, 10);
             let res = await new userSchema(payload);
             res = await res.save();
             message = 'Registration Successfully';
