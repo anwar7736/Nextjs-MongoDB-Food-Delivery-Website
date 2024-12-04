@@ -67,7 +67,7 @@ const OrderList = () => {
       <div className="no-print">
         <h4 className="m-3">All Order List</h4>
         <div align="right" className="m-4">
-          <Link href="/restaurant/place_order" className="bg-purple-600 p-2 text-white rounded">Place Order</Link>
+          <Link href="/restaurant/order/create" className="bg-purple-600 p-2 text-white rounded">Place Order</Link>
         </div>
         <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
