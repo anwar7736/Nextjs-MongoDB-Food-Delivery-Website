@@ -6,7 +6,7 @@ const InvoiceModal = ({ isOpen, onClose, data }) => {
 
   return (
     <div className="print-container fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="relative bg-white rounded-lg shadow-lg w-[600px] max-h-[100vh] p-6 overflow-y-auto">
+      <div className="relative bg-white rounded-lg shadow-lg w-[1000px] max-h-[100vh] p-6 overflow-y-auto">
         {/* Close Button: Top-Right */}
         <button
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 no-print"

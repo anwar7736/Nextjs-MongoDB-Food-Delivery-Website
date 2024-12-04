@@ -13,12 +13,21 @@ export async function POST(request)
     if(payload.login)
     {
         delete payload.login;
-        let res = await userSchema.findOne(payload);
-        if(res)
+        data = await userSchema.findOne({phone:payload.phone});
+        if(data)
         {
-            message = 'Login Successfully';
-            data = res;
-            success = true;
+            const passwordMatched = await bcrypt.compare(payload.password, data.password);
+            if(passwordMatched)
+            {
+                message = 'Login Successfully';
+                success = true;
+            }
+            else{
+                message = 'Password did not matched';
+            }
+        }
+        else{
+            message = 'User not found';
         }
     }
     else{
