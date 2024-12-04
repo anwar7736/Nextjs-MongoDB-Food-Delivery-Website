@@ -13,7 +13,7 @@ const PlaceOrder = () => {
     const [subTotal, setSubTotal] = useState(0);
     const [shippingCharge, setShippingCharge] = useState(50);
     const calculateSubTotal = () => {
-        const total = cart.reduce((total, item) => total + item.price, 0);
+        const total = cart.reduce((total, item) => total + (item.quantity * item.price), 0);
         return total;
     }
     useEffect(() => {
@@ -30,6 +30,45 @@ const PlaceOrder = () => {
 
         setCart(session('cart'));
     }
+
+    const quantityChange = (item, newQty) => {
+        let cartItems = cart;
+        let index = cartItems.findIndex(row => row._id == item._id);
+        if(index != -1 && newQty > 0)
+        {
+            cartItems[index].quantity = Number(newQty);
+            session('cart', cartItems);
+            setCart(session('cart'));
+        }
+        
+    }
+
+    const increaseQty = (item) => {
+        let cartItems = cart;
+        let index = cartItems.findIndex(row => row._id == item._id);
+        if(index != -1)
+        {
+            cartItems[index].quantity++;
+            session('cart', cartItems);
+            setCart(session('cart'));
+        }
+    }
+
+    const decreaseQty = (item) => {
+        let cartItems = cart;
+        let index = cartItems.findIndex(row => row._id == item._id);
+        if(index != -1)
+        {
+            let qty = cartItems[index].quantity;
+            if(cartItems[index].quantity > 1)
+            {
+                cartItems[index].quantity--;
+                session('cart', cartItems);
+                setCart(session('cart'));
+            }
+        }
+    }
+
     const orderSubmit = async () => {
         let data = {
             "user_id": user_auth()._id,
@@ -42,7 +81,7 @@ const PlaceOrder = () => {
         cart.map(item=>{
             data.items.push({
                 "id": item._id,
-                "quantity": 1,
+                "quantity": item.quantity,
                 "price": item.price,
             })
         });
@@ -75,6 +114,11 @@ const PlaceOrder = () => {
                             <div>
                                 <div>{item.name}</div>
                                 <div>{item.price}</div>
+                                <div>
+                                    <button onClick={() => decreaseQty(item)}>-</button>
+                                    <input type="number" value={item.quantity} className="onlyNumber shadow appearance-none border border-green-300 rounded w-12 py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline m-2" onChange={(e) => quantityChange(item, e.target.value)}/>
+                                    <button onClick={() => increaseQty(item)}>+</button>
+                                </div>
                                 <div className="description">{item.description}</div>
                                 {
                                     (<button className="remove_button" onClick={() => removeFromCart(item._id)}>Remove</button>)
