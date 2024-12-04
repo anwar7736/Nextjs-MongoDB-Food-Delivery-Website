@@ -1,7 +1,7 @@
 import { mongoDB_connect } from "@/app/helpers/helper";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
-
+import bcrypt from "bcryptjs";
 
 mongoDB_connect();
 export async function GET()
@@ -40,6 +40,7 @@ export async function POST(request)
             success = false;
         }
         else{
+            payload.password = await bcrypt.hash(payload.password, 10);
             let res = await new restaurantSchema(payload);
             res = await res.save();
             message = 'Registration Successfully';

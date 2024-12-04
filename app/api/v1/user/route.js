@@ -1,6 +1,7 @@
 import { mongoDB_connect } from "@/app/helpers/helper";
 import { userSchema } from "@/app/models/userModel";
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 mongoDB_connect();
 export async function POST(request)
@@ -30,6 +31,7 @@ export async function POST(request)
             success = false;
         }
         else{
+            payload.password = await bcrypt.hash(payload.password, 10);
             let res = await new userSchema(payload);
             res = await res.save();
             message = 'Registration Successfully';
