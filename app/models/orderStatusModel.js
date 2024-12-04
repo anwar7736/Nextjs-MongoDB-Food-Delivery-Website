@@ -7,4 +7,4 @@ const orderStatusModel = new mongoose.Schema({
 });
 
 export const orderStatusSchema = mongoose.models.order_statuses
-   // || mongoose.model('order_statuses', orderStatusModel);
+   || mongoose.model('order_statuses', orderStatusModel);
