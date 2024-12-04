@@ -6,7 +6,7 @@ const InvoiceModal = ({ isOpen, onClose, data }) => {
 
   return (
     <div className="print-container fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="relative bg-white rounded-lg shadow-lg w-[1000px] max-h-[100vh] p-6 overflow-y-auto">
+      <div className="relative bg-white rounded-lg shadow-lg w-[800px] max-h-[100vh] p-6 overflow-y-auto">
         {/* Close Button: Top-Right */}
         <button
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 no-print"
@@ -46,7 +46,7 @@ const InvoiceModal = ({ isOpen, onClose, data }) => {
             <h3 className="text-sm font-medium text-gray-500">Invoice Info</h3>
             <ul className="mt-2 space-y-2">
               <li className="text-gray-700">
-                <span className="font-semibold text-xs">Invoice No.: </span> 
+                <span className="font-semibold text-xs">Invoice No.: </span>
                 <span className="text-xs">#{data?.invoice_no}</span>
               </li>
               <li className="text-gray-700">
@@ -62,7 +62,7 @@ const InvoiceModal = ({ isOpen, onClose, data }) => {
                 <span className="font-semibold">Total Payable:</span> {data?.final_total}
               </li>
               <li className="text-gray-700">
-                <span className="font-semibold">Status:</span> <span style={{color:data?.status?.color}}>{data?.status?.name}</span>
+                <span className="font-semibold">Status:</span> <span style={{ color: data?.status?.color }}>{data?.status?.name}</span>
               </li>
             </ul>
           </div>
@@ -110,14 +110,14 @@ const InvoiceModal = ({ isOpen, onClose, data }) => {
               </thead>
               <tbody>
                 {
-                    data.order_details.map((item, index) => (
-                        <tr className="border-b" key={index}>
-                            <td className="px-4 py-2 text-gray-700">{item?.name}</td>
-                            <td className="px-4 py-2 text-center text-gray-700">{item?.quantity}</td>
-                            <td className="px-4 py-2 text-right text-gray-700">{item?.price}</td>
-                            <td className="px-4 py-2 text-right text-gray-700">{item?.total}</td>
-                        </tr>
-                    ))
+                  data.order_details.map((item, index) => (
+                    <tr className="border-b" key={index}>
+                      <td className="px-4 py-2 text-gray-700">{item?.name}</td>
+                      <td className="px-4 py-2 text-center text-gray-700">{item?.quantity}</td>
+                      <td className="px-4 py-2 text-right text-gray-700">{item?.price}</td>
+                      <td className="px-4 py-2 text-right text-gray-700">{item?.total}</td>
+                    </tr>
+                  ))
                 }
               </tbody>
               <tfoot>
@@ -134,15 +134,15 @@ const InvoiceModal = ({ isOpen, onClose, data }) => {
 
         {/* Modal Footer */}
         <div className="flex justify-end mt-6 space-x-3 no-print">
+          <button className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-300" title="Print" onClick={() => window.print()}>
+            Print
+          </button>
           <button
             onClick={onClose}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-300"
             title="Close"
           >
             Close
-          </button>
-          <button className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-300" title="Print" onClick={() => window.print()}>
-            Print
           </button>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { orderSchema } from "@/app/models/orderModel";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { orderItemSchema } from "@/app/models/orderItemModel";
+import { orderStatusLogSchema } from "@/app/models/orderStatusLogModel";
 mongoDB_connect();
 export async function GET(request, { params }) {
   let { _id } = params;
@@ -82,6 +83,7 @@ export async function GET(request, { params }) {
         status: { $first: "$status" },
         order_details: {
           $push: {
+            id: "$order_details.food._id",
             name: "$order_details.food.name",
             quantity: "$order_details.quantity",
             price: "$order_details.price",
@@ -99,9 +101,9 @@ export async function GET(request, { params }) {
         shipping_charge: 1,
         final_total: 1,
         restaurant: { name: 1, phone: 1, address: 1 },
-        user: { name: 1, phone: 1, address: 1 },
-        delivery: { name: 1, phone: 1, address: 1 },
-        status: { name: 1, color: 1 },
+        user: {_id: 1, name: 1, phone: 1, address: 1 },
+        delivery: {_id: 1, name: 1, phone: 1, address: 1 },
+        status: {_id: 1, name: 1, color: 1 },
         order_details: 1
       }
     }
@@ -118,10 +120,11 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   let { _id } = params;
   let success = false;
-  let data = [];
   let message = "";
+  let date = new Date().toLocaleDateString();
   try {
     request = await request.json();
+    const oldOrder = await orderSchema.findById(_id);
     let orderInput = {
       "user_id": request.user_id,
       "delivery_partner_id": request.delivery_partner_id,
@@ -129,6 +132,17 @@ export async function PUT(request, { params }) {
       "shipping_charge": request.shipping_charge,
       "final_total": (request.total + request.shipping_charge),
     };
+    let statusLogInput = [];
+    if(oldOrder.status_id != request.status_id)
+    {
+      orderInput.status_id = request.status_id;
+      statusLogInput = {
+        "order_id": _id,
+        "status_id": request.status_id,
+        "date": date
+    };
+
+    }
     const order = await orderSchema.findOneAndUpdate({ _id }, { $set: orderInput });
     if (order) {
       const itemDeleted = await orderItemSchema.deleteMany({ order_id: _id });
@@ -145,13 +159,19 @@ export async function PUT(request, { params }) {
 
       let items = await orderItemSchema.insertMany(orderItemInput);
       if (items) {
+        if(statusLogInput)
+        {
+          let statusLog = await orderStatusLogSchema(statusLogInput);
+          statusLog = await statusLog.save();
+        }
+
         success = true;
         message = "Order updated successfully.";
       }
     }
   } catch (error) {
-    console.error("Error:", error);
-    message = "Error occured while order updated";
+    console.error("Error:", error.message);
+    message = error.message;
   }
 
   return NextResponse.json({ success, message });

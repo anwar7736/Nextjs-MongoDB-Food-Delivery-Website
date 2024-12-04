@@ -12,7 +12,7 @@ const PlaceOrder = () => {
     const [deliveries, setDeliveries] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
-    const [rows, setRows] = useState([{ id: "", quantity: 0, price: 0 }]);
+    const [rows, setRows] = useState([{ id: "", quantity: 1, price: 0 }]);
     const [summary, setSummary] = useState({ total: 0, shipping_charge: 50, final_total: 0 });
     const {
         register,
@@ -49,14 +49,15 @@ const PlaceOrder = () => {
         }
     }
 
-    const calculateRowTotal = async () => {
+    const calculateRowTotal = async (data) => {
         let total = 0;
         let shipping_charge = summary.shipping_charge;
-        rows.map(row => {
+        data = data ?? rows;
+        data.map(row => {
             total += row.quantity * row.price;
         });
         let final_total = total + shipping_charge;
-        setSummary((prev) => ({ ...prev, total, shipping_charge, final_total }));
+        setSummary((prev) => ({ ...prev, total, final_total }));
     }
 
     const onShippingChargeChange = (shipping_charge) => {
@@ -72,8 +73,9 @@ const PlaceOrder = () => {
     }
 
     const removeRow = async (index) => {
-        setRows(rows.filter((row, i) => i != index));
-        calculateRowTotal();
+        const newData = rows.filter((row, i) => i != index);
+        setRows(newData);
+        calculateRowTotal(newData);
     }
 
     const itemChange = async (index, id) => {
@@ -117,9 +119,7 @@ const PlaceOrder = () => {
     }
 
     const getAllCustomers = async () => {
-        let res = await fetch("/api/v1/user", {
-            method: "GET",
-        });
+        let res = await fetch("/api/v1/user");
 
         res = await res.json();
         if (res.success) {
@@ -129,9 +129,7 @@ const PlaceOrder = () => {
 
     const getAllDeliveries = async () => {
         const restaurant = await restaurant_auth();
-        let res = await fetch(`/api/v1/delivery?city=${restaurant.city}`, {
-            method: "GET",
-        });
+        let res = await fetch(`/api/v1/delivery?city=${restaurant.city}`);
 
         res = await res.json();
         if (res.success) {
@@ -140,9 +138,7 @@ const PlaceOrder = () => {
     }
 
     const getAllOrderStatuses = async () => {
-        let res = await fetch("/api/v1/order/statuses", {
-            method: "GET",
-        });
+        let res = await fetch("/api/v1/order/statuses");
         res = await res.json();
         if (res.success) {
             setStatuses(res.data);
@@ -151,10 +147,8 @@ const PlaceOrder = () => {
 
     const getAllFoodItems = async () => {
         const restaurant = await restaurant_auth();
-        let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${restaurant._id}`, {
-            method: "GET",
-        });
-        res = await res.json();
+        let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${restaurant._id}`);
+            res = await res.json();
         if (res.success) {
             setFoodItems(res.foodItems);
         }
@@ -232,7 +226,7 @@ const PlaceOrder = () => {
                                     rows.map((row, index) => (
                                         <tr>
                                             <td>
-                                                <select name="item_id[0]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id} onChange={(e) => itemChange(index, e.target.value)}>
+                                                <select name="item_id[]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id} onChange={(e) => itemChange(index, e.target.value)}>
                                                     <option value="" selected>Select Any Item</option>
                                                     {
                                                         foodItems.map((item, i) => (

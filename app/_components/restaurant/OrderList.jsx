@@ -139,7 +139,7 @@ const OrderList = () => {
                     <td className="px-6 py-4 flex justify-between" >
                     <button className="bg-black p-2 text-white rounded" onClick={() => showInvoice(order?._id)}>View</button>
                     &nbsp;
-                    <button className="bg-green-600 p-2 text-white rounded">Edit</button>
+                    <Link href={`/restaurant/order/edit/${order?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
                     &nbsp;
                     <button className="bg-red-600 p-2 text-white rounded" onClick={() => deleteItem(order?._id)}>Delete</button>
                     </td>
