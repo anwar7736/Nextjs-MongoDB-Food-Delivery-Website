@@ -1,7 +1,8 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { CartContext } from "../contexts/CartContext";
-import { isUserAuth, session, session_destroy } from "../helpers/helper";
+import { isUserAuth } from "../helpers/helper";
+import { session, session_destroy } from "../helpers/SessionHelper";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { hasCookie } from "cookies-next";

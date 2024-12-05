@@ -62,11 +62,11 @@ export default function Home() {
             className="select-input" placeholder="Select Place" />
           <ul className="location-list">
             {
-              showLocation && <li onClick={() => handleListItem('')}>All Locations</li>
+              showLocation && <li key={0} onClick={() => handleListItem('')}>All Locations</li>
             }
             {
               showLocation && locations.map((item, key) => (
-                <li onClick={() => handleListItem(item)}>{item}</li>
+                <li key={key+1} onClick={() => handleListItem(item)}>{item}</li>
               ))
             }
           </ul>
@@ -80,7 +80,7 @@ export default function Home() {
       <div className="restaurant-list-container">
         {
           restaurants.map((item) => (
-            <Link href={`explore/${item._id}`} className="restaurant-wrapper">
+            <Link key={item._id} href={`explore/${item._id}`} className="restaurant-wrapper">
               <div className="heading-wrapper">
                 <h3>{item.name}</h3>
                 <h5>Contact:{item.contact}</h5>

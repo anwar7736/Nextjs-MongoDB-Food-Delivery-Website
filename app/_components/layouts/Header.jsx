@@ -16,7 +16,6 @@ const Header = () => {
   const { delivery, setDelivery } = useContext(DeliveryAuthContext);
   const { cart, setCart } = useContext(CartContext);
   const router = useRouter();
-  console.log(cart);
 
   const Logout = async (type) => {
     Swal.fire({

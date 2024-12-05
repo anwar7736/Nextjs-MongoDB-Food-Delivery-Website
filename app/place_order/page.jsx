@@ -1,8 +1,9 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { CartContext } from "../contexts/CartContext";
-import { isUserAuth, session, session_destroy, user_auth } from "../helpers/helper";
+import { isUserAuth, user_auth } from "../helpers/helper";
 import Link from "next/link";
+import { session, session_destroy } from "../helpers/SessionHelper";
 import withUserAuth from "../hoc/withUserAuth";
 import cogoToast from "cogo-toast-react-17-fix";
 import { useRouter } from "next/navigation";

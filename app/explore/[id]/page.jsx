@@ -1,6 +1,6 @@
 "use client";
 import { CartContext } from "@/app/contexts/CartContext";
-import { session, session_destroy } from "@/app/helpers/helper";
+import { session, session_destroy } from "@/app/helpers/SessionHelper";
 import { useContext, useEffect, useState } from "react";
 
 const Explore = (props) => {

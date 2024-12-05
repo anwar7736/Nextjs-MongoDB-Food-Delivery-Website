@@ -8,6 +8,7 @@ import { useContext } from "react";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
+import { session, session_destroy } from "@/app/helpers/SessionHelper";
 const Login = () => {
     const {auth, setAuth} = useContext(AuthContext);
     const {user, setUser} = useContext(UserAuthContext);
@@ -38,11 +39,11 @@ const Login = () => {
             setCookie('user_auth', JSON.stringify(res.data));
             setUser(user_auth());
             let redirectUrl = "/user/dashboard";
-            let url = localStorage.getItem('redirect_url');
-            if(url != null)
+            let url = session('redirect_url');
+            if(url && url.length > 0)
             {
                 redirectUrl = url;
-                localStorage.removeItem('redirect_url');
+                session_destroy('redirect_url');
             }
             router.push(redirectUrl);
             toast.success("Login Successfully");
