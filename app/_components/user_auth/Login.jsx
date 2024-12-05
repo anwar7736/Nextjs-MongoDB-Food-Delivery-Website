@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import toast from 'cogo-toast-react-17-fix';
 import { useRouter } from 'next/navigation'
 import ValidationError from "../ValidationError";
-import { delivery_auth, restaurant_auth, user_auth, session, session_destroy } from "@/app/helpers/helper";
+import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper";
 import { deleteCookie, setCookie } from "cookies-next";
 import { useContext } from "react";
 import { AuthContext } from "@/app/contexts/AuthContext";
@@ -38,10 +38,11 @@ const Login = () => {
             setCookie('user_auth', JSON.stringify(res.data));
             setUser(user_auth());
             let redirectUrl = "/user/dashboard";
-            if(session('redirect_url').length > 0)
+            let url = localStorage.getItem('redirect_url');
+            if(url != null)
             {
-                redirectUrl = session('redirect_url');
-                session_destroy('redirect_url');
+                redirectUrl = url;
+                localStorage.removeItem('redirect_url');
             }
             router.push(redirectUrl);
             toast.success("Login Successfully");

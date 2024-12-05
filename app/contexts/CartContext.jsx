@@ -1,9 +1,12 @@
 "use client";
-import { createContext, useState } from "react";
-import { session } from "../helpers/helper";
+import { createContext, useEffect, useState } from "react";
 export const CartContext = createContext();
 const CartContextProvider = ({children}) => {
-    const [cart, setCart] = useState(session('cart'));
+    const [cart, setCart] = useState([]);
+    useEffect(()=>{
+        let storage = localStorage.getItem('cart') != null ? JSON.parse(localStorage.getItem('cart')) : [];
+        setCart(storage);
+    }, []);
     return (
         <CartContext.Provider value={{cart, setCart}}>
             {children}
