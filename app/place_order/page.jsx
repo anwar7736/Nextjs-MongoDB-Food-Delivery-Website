@@ -20,6 +20,7 @@ const PlaceOrder = () => {
     useEffect(() => {
         setSubTotal(calculateSubTotal());
     }, [cart]);
+
     const removeFromCart = (id) => {
         let cartItems = cart.filter(item => item._id != id);
         if (cartItems.length > 0) {
@@ -30,6 +31,7 @@ const PlaceOrder = () => {
         }
 
         setCart(session('cart'));
+        cogoToast.success("Item has been removed.");
     }
 
     const quantityChange = (item, newQty) => {
@@ -40,6 +42,7 @@ const PlaceOrder = () => {
             cartItems[index].quantity = Number(newQty);
             session('cart', cartItems);
             setCart(session('cart'));
+            cogoToast.success("Item quantity updated.");
         }
         
     }
@@ -52,6 +55,7 @@ const PlaceOrder = () => {
             cartItems[index].quantity++;
             session('cart', cartItems);
             setCart(session('cart'));
+            cogoToast.success("Item quantity increased.");
         }
     }
 
@@ -60,12 +64,12 @@ const PlaceOrder = () => {
         let index = cartItems.findIndex(row => row._id == item._id);
         if(index != -1)
         {
-            let qty = cartItems[index].quantity;
             if(cartItems[index].quantity > 1)
             {
                 cartItems[index].quantity--;
                 session('cart', cartItems);
                 setCart(session('cart'));
+                cogoToast.success("Item quantity decreased.");
             }
         }
     }

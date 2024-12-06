@@ -1,6 +1,7 @@
 "use client";
 import { CartContext } from "@/app/contexts/CartContext";
 import { session, session_destroy } from "@/app/helpers/SessionHelper";
+import cogoToast from "cogo-toast-react-17-fix";
 import { useContext, useEffect, useState } from "react";
 
 const Explore = (props) => {
@@ -40,6 +41,7 @@ const Explore = (props) => {
       session('cart', [item]);
     }
     setCart(session('cart'));
+    cogoToast.success("Item added to cart.");
   }
 
   useEffect(() => {

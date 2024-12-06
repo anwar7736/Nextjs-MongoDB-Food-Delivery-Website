@@ -1,14 +1,14 @@
 "use client";
-import withAuth from "@/app/hoc/withAuth";
+import withUserAuth from "@/app/hoc/withUserAuth";
 import { useForm } from "react-hook-form";
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
-import { restaurant_auth } from "@/app/helpers/helper";
+import { user_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
 import { useContext, useEffect } from "react";
-import { AuthContext } from "@/app/contexts/AuthContext";
+import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 const Profile = () => {
-    const {auth, setAuth} = useContext(AuthContext);
+    const {user, setUser} = useContext(UserAuthContext);
     const {
         register,
         handleSubmit,
@@ -18,16 +18,16 @@ const Profile = () => {
     } = useForm();
 
     const signupFormHandler = async (data) => {
-        let restaurant = restaurant_auth();
-        let res = await fetch(`/api/v1/restaurant/profile/${restaurant._id}`, {
+        let user = user_auth();
+        let res = await fetch(`/api/v1/user/profile/${user._id}`, {
             method: "PUT",
             body: JSON.stringify(data)
         });
 
         res = await res.json();
         if (res.success) {
-            setCookie('restaurant_auth', JSON.stringify(res.data));
-            setAuth(restaurant_auth());
+            setCookie('user_auth', JSON.stringify(res.data));
+            setUser(user_auth());
             toast.success(res.message);
         }
         else {
@@ -37,17 +37,15 @@ const Profile = () => {
 
     useEffect(()=>{
         reset({
-            name: auth?.name,
-            phone: auth?.phone,
-            email: auth?.email,
-            city: auth?.city,
-            address: auth?.address,
+            name: user?.name,
+            phone: user?.phone,
+            address: user?.address,
         });
     }, []);
 
     return (
         <div align="center">
-            <title>Restaurant Profile</title>
+            <title>User Profile</title>
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(signupFormHandler)}>
                     <div className="mb-4">
@@ -70,38 +68,11 @@ const Profile = () => {
                         {errors.phone && <ValidationError message={errors.phone.message} />}
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="city">
-                            City
-                        </label>
-                        <select name="city" id="city" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" {...register("city", { required: 'This field is required' })} >
-                            <option value="">Select Any City</option>
-                            <option value="Dhaka">Dhaka</option>
-                            <option value="Chattogram">Chattogram</option>
-                            <option value="Khulna">Khulna</option>
-                            <option value="Rajshahi">Rajshahi</option>
-                            <option value="Sylhet">Sylhet</option>
-                            <option value="Barishal">Barishal</option>
-                            <option value="Rangpur">Rangpur</option>
-                            <option value="Mymensingh">Mymensingh</option>
-                            <option value="Comilla">Comilla</option>
-                            <option value="Narayanganj">Narayanganj</option>
-                            <option value="Gazipur">Gazipur</option>
-                        </select>
-                        {errors.city && <ValidationError message={errors.city.message} />}
-                    </div>
-                    <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="address">
                             Address
                         </label>
                         <textarea className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="address" type="text" placeholder="Address" {...register("address", { required: 'This field is required.' })}></textarea>
                         {errors.address && <ValidationError message={errors.address.message} />}
-                    </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
-                            Email
-                        </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: 'Provide a valid email address.' })} />
-                        {errors.email && <ValidationError message={errors.email.message} />}
                     </div>
                     <div className="mb-6">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="password">
@@ -146,4 +117,4 @@ const Profile = () => {
     )
 }
 
-export default withAuth(Profile)
+export default withUserAuth(Profile)

@@ -43,7 +43,7 @@ export async function PUT(request, content) {
 
         } else {
             success = false;
-            message = "Profile update failed.";
+            message = "Nothing to updated.";
 
         }
     }

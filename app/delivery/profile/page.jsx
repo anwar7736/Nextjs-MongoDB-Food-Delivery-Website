@@ -1,14 +1,14 @@
 "use client";
-import withAuth from "@/app/hoc/withAuth";
+import withDeliveryAuth from "@/app/hoc/withDeliveryAuth";
 import { useForm } from "react-hook-form";
 import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
-import { restaurant_auth } from "@/app/helpers/helper";
+import { delivery_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
 import { useContext, useEffect } from "react";
-import { AuthContext } from "@/app/contexts/AuthContext";
+import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 const Profile = () => {
-    const {auth, setAuth} = useContext(AuthContext);
+    const {delivery, setDelivery} = useContext(DeliveryAuthContext);
     const {
         register,
         handleSubmit,
@@ -18,16 +18,16 @@ const Profile = () => {
     } = useForm();
 
     const signupFormHandler = async (data) => {
-        let restaurant = restaurant_auth();
-        let res = await fetch(`/api/v1/restaurant/profile/${restaurant._id}`, {
+        let delivery = delivery_auth();
+        let res = await fetch(`/api/v1/delivery/profile/${delivery._id}`, {
             method: "PUT",
             body: JSON.stringify(data)
         });
 
         res = await res.json();
         if (res.success) {
-            setCookie('restaurant_auth', JSON.stringify(res.data));
-            setAuth(restaurant_auth());
+            setCookie('delivery_auth', JSON.stringify(res.data));
+            setDelivery(delivery_auth());
             toast.success(res.message);
         }
         else {
@@ -37,11 +37,10 @@ const Profile = () => {
 
     useEffect(()=>{
         reset({
-            name: auth?.name,
-            phone: auth?.phone,
-            email: auth?.email,
-            city: auth?.city,
-            address: auth?.address,
+            name: delivery?.name,
+            phone: delivery?.phone,
+            city: delivery?.city,
+            address: delivery?.address,
         });
     }, []);
 
@@ -96,13 +95,6 @@ const Profile = () => {
                         <textarea className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="address" type="text" placeholder="Address" {...register("address", { required: 'This field is required.' })}></textarea>
                         {errors.address && <ValidationError message={errors.address.message} />}
                     </div>
-                    <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
-                            Email
-                        </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: 'Provide a valid email address.' })} />
-                        {errors.email && <ValidationError message={errors.email.message} />}
-                    </div>
                     <div className="mb-6">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="password">
                             Current Password
@@ -146,4 +138,4 @@ const Profile = () => {
     )
 }
 
-export default withAuth(Profile)
+export default withDeliveryAuth(Profile)
