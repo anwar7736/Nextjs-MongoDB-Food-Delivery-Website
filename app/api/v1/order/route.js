@@ -15,10 +15,10 @@ export async function POST(request)
     request = await request.json();
     const invoiceNo = `INV-${Math.floor(100000 + Math.random() * 900000)}`;
     const date = new Date().toLocaleDateString();
-    let restaurant = await restaurantSchema.findOne({_id:request.restaurant_id});
+    let restaurant = await restaurantSchema.findById(request.restaurant_id);
     let deliveries = await deliverySchema.find({city:restaurant.city});
     let randomIndex = Math.floor(Math.random() * deliveries.length);
-    let delivery_partner_id = request.delivery_partner_id ?? deliveries ? deliveries[randomIndex]._id : "";
+    let delivery_partner_id = request.delivery_partner_id ?? deliveries.length > 0 ? deliveries[randomIndex]._id : null;
     let orderInput = {
         "user_id": request.user_id,
         "restaurant_id": restaurant._id,

@@ -105,7 +105,9 @@ const PlaceOrder = () => {
                 <h1>Place Order</h1>
             </div>
             <div className="food-list-wrapper">
-                <h4 className="ml-3">Foods Information</h4>
+                {
+                    cart.length > 0 && (<h4 className="ml-3">Foods Information</h4>)
+                }
                 {
                     cart.length > 0 ? cart.map((item) => (
                         <div className="list-item" key={item._id}>
