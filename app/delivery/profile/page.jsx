@@ -38,6 +38,7 @@ const Profile = () => {
 
     useEffect(()=>{
         setDelivery(delivery_auth());
+        console.log(delivery);
         reset({
             name: delivery?.name,
             phone: delivery?.phone,

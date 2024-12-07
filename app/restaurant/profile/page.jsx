@@ -5,11 +5,10 @@ import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "@/app/contexts/AuthContext";
 const Profile = () => {
-    const [auth, setAuth] = useState([]);
-    setUser(user_auth());
+    const {auth, setAuth} = useContext(AuthContext);
     const {
         register,
         handleSubmit,
@@ -37,7 +36,6 @@ const Profile = () => {
     }
 
     useEffect(()=>{
-        setAuth(restaurant_auth());
         reset({
             name: auth?.name,
             phone: auth?.phone,
