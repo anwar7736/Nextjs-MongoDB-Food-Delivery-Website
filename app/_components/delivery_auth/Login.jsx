@@ -18,7 +18,12 @@ const Login = () => {
         handleSubmit,
         watch,
         formState: { errors },
-      } = useForm();
+      } = useForm({
+        defaultValues: {
+          phone: '01710000000',
+          password: '1234'
+        }
+      });
     const loginFormHandler = async (data) => {
         data.login = true;
 

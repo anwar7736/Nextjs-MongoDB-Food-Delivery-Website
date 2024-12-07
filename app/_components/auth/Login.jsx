@@ -18,7 +18,12 @@ const Login = () => {
         handleSubmit,
         watch,
         formState: { errors },
-      } = useForm();
+      } = useForm({
+        defaultValues: {
+          email: 'test@gmail.com',
+          password: '1234'
+        }
+      });
     const loginFormHandler = async (data) => {
         data.login = true;
 
