@@ -24,6 +24,7 @@ export async function PUT(request, content) {
             message = "User not fond.";
             return NextResponse.json({ success, data, message });
         }
+        delete request.password;
         if (request.old_password) {
             const passwordMatched = await bcrypt.compare(request.old_password, user.password);
             if (!passwordMatched) {

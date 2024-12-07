@@ -37,21 +37,19 @@ const PlaceOrder = () => {
     const quantityChange = (item, newQty) => {
         let cartItems = cart;
         let index = cartItems.findIndex(row => row._id == item._id);
-        if(index != -1 && newQty > 0)
-        {
+        if (index != -1 && newQty > 0) {
             cartItems[index].quantity = Number(newQty);
             session('cart', cartItems);
             setCart(session('cart'));
             cogoToast.success("Item quantity updated.");
         }
-        
+
     }
 
     const increaseQty = (item) => {
         let cartItems = cart;
         let index = cartItems.findIndex(row => row._id == item._id);
-        if(index != -1)
-        {
+        if (index != -1) {
             cartItems[index].quantity++;
             session('cart', cartItems);
             setCart(session('cart'));
@@ -62,10 +60,8 @@ const PlaceOrder = () => {
     const decreaseQty = (item) => {
         let cartItems = cart;
         let index = cartItems.findIndex(row => row._id == item._id);
-        if(index != -1)
-        {
-            if(cartItems[index].quantity > 1)
-            {
+        if (index != -1) {
+            if (cartItems[index].quantity > 1) {
                 cartItems[index].quantity--;
                 session('cart', cartItems);
                 setCart(session('cart'));
@@ -77,27 +73,26 @@ const PlaceOrder = () => {
     const orderSubmit = async () => {
         let data = {
             "user_id": user_auth()._id,
-            "restaurant_id":cart[0].restaurant_id,
+            "restaurant_id": cart[0].restaurant_id,
             "total": subTotal,
             "shipping_charge": shippingCharge,
             "items": []
         };
 
-        cart.map(item=>{
+        cart.map(item => {
             data.items.push({
                 "id": item._id,
                 "quantity": item.quantity,
                 "price": item.price,
             })
         });
-        
+
         let res = await fetch("/api/v1/order", {
-            method: "POST", 
+            method: "POST",
             body: JSON.stringify(data)
         });
         res = await res.json();
-        if(res.success)
-        {
+        if (res.success) {
             session_destroy('cart');
             setCart(session('cart'));
             cogoToast.success(res.message);
@@ -121,7 +116,7 @@ const PlaceOrder = () => {
                                 <div>{item.price}</div>
                                 <div>
                                     <button onClick={() => decreaseQty(item)}>-</button>
-                                    <input type="number" value={item.quantity} className="onlyNumber shadow appearance-none border border-green-300 rounded w-12 py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline m-2" onChange={(e) => quantityChange(item, e.target.value)}/>
+                                    <input type="number" value={item.quantity} className="onlyNumber shadow appearance-none border border-green-300 rounded w-12 py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline m-2" onChange={(e) => quantityChange(item, e.target.value)} />
                                     <button onClick={() => increaseQty(item)}>+</button>
                                 </div>
                                 <div className="description">{item.description}</div>
@@ -135,25 +130,30 @@ const PlaceOrder = () => {
                     ))
                         : (<h1 className="text-center text-red-600">Your cart is empty!</h1>)
                 }
-                <div className="ml-3 mt-3 mb-3">
-                    <h4>Shipping Information</h4>
-                    <p><b>Address:</b> Dhaka</p>
-                    <p><b>Phone:</b> 0171000000</p>
-                </div>
-                <hr/>
-                <div className="ml-3 mt-3 mb-3">
-                    <h4>Costing Information</h4>
-                    <div align="left" className="">
-                        <p><b>Total Items:</b> {cart.length}</p>
-                        <p><b>Sub Total:</b>{subTotal}</p>
-                        <p><b>Shipping Charge:</b>{shippingCharge}</p>
-                        <p><b>Total Amount:</b>{subTotal + shippingCharge}</p>
-                    </div>
-                    <div align="left" className=" mt-3">
-                        <button onClick={()=> orderSubmit()} className="order-now-btn">Plce Order</button>
-                    </div>
-                </div>
-                
+                {
+                    cart.length > 0 &&
+                    (<div>
+
+                        <div className="ml-3 mt-3 mb-3">
+                            <h4>Shipping Information</h4>
+                            <p><b>Address:</b> Dhaka</p>
+                            <p><b>Phone:</b> 0171000000</p>
+                        </div>
+                        <hr />
+                        <div className="ml-3 mt-3 mb-3">
+                            <h4>Costing Information</h4>
+                            <div align="left" className="">
+                                <p><b>Total Items:</b> {cart.length}</p>
+                                <p><b>Sub Total:</b>{subTotal}</p>
+                                <p><b>Shipping Charge:</b>{shippingCharge}</p>
+                                <p><b>Total Amount:</b>{subTotal + shippingCharge}</p>
+                            </div>
+                            <div align="left" className=" mt-3">
+                                <button onClick={() => orderSubmit()} className="order-now-btn">Plce Order</button>
+                            </div>
+                        </div>
+                    </div>)
+                }
                 <div align="center" className="mt-5">
                     <Link href="/" className="shopping-btn">Continue Shopping</Link>
                 </div>
