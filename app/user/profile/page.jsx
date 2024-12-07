@@ -5,10 +5,10 @@ import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
 import { user_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 const Profile = () => {
-    const {user, setUser} = useContext(UserAuthContext);
+    const [user, setUser] = useState([]);
     const {
         register,
         handleSubmit,
@@ -18,7 +18,6 @@ const Profile = () => {
     } = useForm();
 
     const signupFormHandler = async (data) => {
-        let user = user_auth();
         let res = await fetch(`/api/v1/user/profile/${user._id}`, {
             method: "PUT",
             body: JSON.stringify(data)
@@ -36,6 +35,7 @@ const Profile = () => {
     }
 
     useEffect(()=>{
+        setUser(user_auth());
         reset({
             name: user?.name,
             phone: user?.phone,

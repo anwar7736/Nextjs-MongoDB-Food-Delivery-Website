@@ -5,10 +5,11 @@ import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
 import { delivery_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 const Profile = () => {
-    const {delivery, setDelivery} = useContext(DeliveryAuthContext);
+    const [delivery, setDelivery] = useState([]);
+
     const {
         register,
         handleSubmit,
@@ -36,6 +37,7 @@ const Profile = () => {
     }
 
     useEffect(()=>{
+        setDelivery(delivery_auth());
         reset({
             name: delivery?.name,
             phone: delivery?.phone,
