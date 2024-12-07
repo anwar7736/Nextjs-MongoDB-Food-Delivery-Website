@@ -23,7 +23,6 @@ export async function PUT(request, content) {
             message = "User not fond.";
             return NextResponse.json({ success, data, message });
         }
-        delete request.password;
         if (request.old_password) {
             const passwordMatched = await bcrypt.compare(request.old_password, user.password);
             if (!passwordMatched) {
@@ -34,6 +33,10 @@ export async function PUT(request, content) {
             }
 
             request.password = await bcrypt.hash(request.password, 10);
+        }
+
+        if (request.password == '') {
+            delete request.password;
         }
 
         data = await userSchema.updateOne({ _id: id }, { $set: request });
