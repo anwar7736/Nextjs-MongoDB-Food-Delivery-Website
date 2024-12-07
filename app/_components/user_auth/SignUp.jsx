@@ -33,7 +33,7 @@ const SignUp = () => {
     {
         delete res.data.password;
         deleteCookie('delivery_auth');
-        setUser(delivery_auth());
+        setDelivery(delivery_auth());
         deleteCookie('restaurant_auth');
         setAuth(restaurant_auth());
         setCookie('user_auth', JSON.stringify(res.data));
