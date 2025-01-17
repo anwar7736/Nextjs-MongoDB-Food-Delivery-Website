@@ -1,7 +1,7 @@
 "use client";
 import { CartContext } from "@/app/contexts/CartContext";
 import { session, session_destroy } from "@/app/helpers/SessionHelper";
-import cogoToast from "cogo-toast-react-17-fix";
+import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
 
 const Explore = (props) => {
@@ -9,6 +9,7 @@ const Explore = (props) => {
   const { cart, setCart } = useContext(CartContext);
   const [restaurantDetails, setRestaurantDetails] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(false);
 
   const getRestaurantDetails = async () => {
     let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${_id}`);
@@ -20,6 +21,7 @@ const Explore = (props) => {
     }
   }
   const addToCart = (item) => {
+    setIsDisabled(true);
     item.quantity = 1;
     if (cart.length > 0) {
       if (cart[0].restaurant_id != item.restaurant_id) {
@@ -41,7 +43,8 @@ const Explore = (props) => {
       session('cart', [item]);
     }
     setCart(session('cart'));
-    cogoToast.success("Item added to cart.");
+    setIsDisabled(false);
+    toast.success("Item added to cart.");
   }
 
   useEffect(() => {
@@ -52,9 +55,9 @@ const Explore = (props) => {
   return (
     <div>
       <div className="restaurant-page-banner">
-      <h1 className="text-lg">
-  {restaurantDetails?.name && decodeURI(restaurantDetails.name)}
-</h1>
+        <h1 className="text-lg">
+          {restaurantDetails?.name && decodeURI(restaurantDetails.name)}
+        </h1>
 
 
       </div>
@@ -75,7 +78,10 @@ const Explore = (props) => {
                 <div>{item.name}</div>
                 <div>{item.price}</div>
                 <div className="description">{item.description}</div>
-                <button className="add_button" onClick={() => addToCart(item)}>Add to Cart</button>
+                <button disabled={isDisabled}
+                  className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
+                   onClick={() => addToCart(item)}>Add to Cart</button>
               </div>
 
             </div>

@@ -1,25 +1,42 @@
 "use client";
 import withUserAuth from "@/app/hoc/withUserAuth";
 import { useForm } from "react-hook-form";
-import toast from 'cogo-toast-react-17-fix';
 import ValidationError from "@/app/_components/ValidationError";
-import { user_auth } from "@/app/helpers/helper";
+import { isUserAuth, user_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
+import { toast } from "react-toastify";
+import { redirect } from "next/navigation";
 const Profile = () => {
     const {user, setUser} = useContext(UserAuthContext);
+    const [isDisabled, setIsDisabled] = useState(false);
+    const auth = user_auth();
     const {
         register,
         handleSubmit,
         watch,
+        setValue,
         formState: { errors },
         reset,
-    } = useForm();
+    } = useForm({
+        defaultValues:{
+            name: auth?.name,
+            phone: auth?.phone,
+            address: auth?.address,
+        }
+    });
 
-    const signupFormHandler = async (data) => {
-        let user = user_auth();
-        let res = await fetch(`/api/v1/user/profile/${user._id}`, {
+    useEffect(()=>{
+        if(!auth)
+        {
+            redirect("/user");
+        }
+    }, []);
+
+    const profileFormHandler = async (data) => {
+        setIsDisabled(true);
+        let res = await fetch(`/api/v1/user/profile/${auth._id}`, {
             method: "PUT",
             body: JSON.stringify(data)
         });
@@ -31,23 +48,16 @@ const Profile = () => {
             toast.success(res.message);
         }
         else {
+            setIsDisabled(false);
             toast.error(res.message);
         }
     }
-
-    useEffect(()=>{
-        reset({
-            name: user?.name,
-            phone: user?.phone,
-            address: user?.address,
-        });
-    }, []);
 
     return (
         <div align="center">
             <title>User Profile</title>
             <div className="w-full max-w-xs">
-                <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(signupFormHandler)}>
+                <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(profileFormHandler)}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                             Name
@@ -58,21 +68,21 @@ const Profile = () => {
                                 message: 'This should be atleast 3 characters.'
                             }
                         })} />
-                        {errors.name && <ValidationError message={errors.name.message} />}
+                        {errors?.name && <ValidationError message={errors?.name?.message} />}
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="phone">
                             Phone
                         </label>
                         <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", { required: 'Provide a valid phone number.', pattern: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/ })} />
-                        {errors.phone && <ValidationError message={errors.phone.message} />}
+                        {errors?.phone && <ValidationError message={errors?.phone?.message} />}
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="address">
                             Address
                         </label>
                         <textarea className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="address" type="text" placeholder="Address" {...register("address", { required: 'This field is required.' })}></textarea>
-                        {errors.address && <ValidationError message={errors.address.message} />}
+                        {errors?.address && <ValidationError message={errors?.address?.message} />}
                     </div>
                     <div className="mb-6">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="password">
@@ -107,7 +117,11 @@ const Profile = () => {
                         <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="cpassword" type="password" placeholder="******************" {...register("cpassword")} />
                     </div>
                     <div className="flex items-center justify-between">
-                        <button className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                        <button 
+                        disabled={isDisabled}
+                        className={`bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                            }`}
+                        type="submit">
                             Update
                         </button>
                     </div>
@@ -117,4 +131,4 @@ const Profile = () => {
     )
 }
 
-export default withUserAuth(Profile)
+export default Profile

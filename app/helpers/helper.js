@@ -14,7 +14,7 @@ export const restaurant_auth = () =>
 
 export const isRestaurantAuth = () => 
 {
-    return hasCookie('restaurant_auth') ? true : false;
+    return hasCookie('restaurant_auth');
 }
 
 export const user_auth = () => 
@@ -24,7 +24,7 @@ export const user_auth = () =>
 
 export const isUserAuth = () => 
 {
-    return hasCookie('user_auth') ? true : false;
+    return hasCookie('user_auth');
 }
 
 export const delivery_auth = () => 
@@ -34,7 +34,7 @@ export const delivery_auth = () =>
 
 export const isDeliveryAuth = () => 
 {
-    return hasCookie('delivery_auth') ? true : false;
+    return hasCookie('delivery_auth');
 }
 
 export const dateFormat = (date) =>

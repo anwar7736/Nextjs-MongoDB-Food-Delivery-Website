@@ -1,26 +1,41 @@
 "use client";
 import withDeliveryAuth from "@/app/hoc/withDeliveryAuth";
 import { useForm } from "react-hook-form";
-import toast from 'cogo-toast-react-17-fix';
+import { toast } from "react-toastify";
 import ValidationError from "@/app/_components/ValidationError";
 import { delivery_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
 import { useContext, useEffect, useState } from "react";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 const Profile = () => {
-    const [delivery, setDelivery] = useState([]);
-
+    const {delivery, setDelivery} = useContext(DeliveryAuthContext);
+    const [isDisabled, setIsDisabled] = useState(false);
+    let auth = delivery_auth();
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors },
         reset,
-    } = useForm();
+    } = useForm({
+        defaultValues:{
+            name: auth?.name,
+            phone: auth?.phone,
+            city: auth?.city,
+            address: auth?.address,
+        }
+    });
+
+    useEffect(()=>{
+        if(!auth)
+        {
+            redirect("/delivery");
+        }
+    }, []);
 
     const signupFormHandler = async (data) => {
-        let delivery = delivery_auth();
-        let res = await fetch(`/api/v1/delivery/profile/${delivery._id}`, {
+        setIsDisabled(true);
+        let res = await fetch(`/api/v1/delivery/profile/${auth._id}`, {
             method: "PUT",
             body: JSON.stringify(data)
         });
@@ -32,20 +47,10 @@ const Profile = () => {
             toast.success(res.message);
         }
         else {
+            setIsDisabled(false);
             toast.error(res.message);
         }
     }
-
-    useEffect(()=>{
-        setDelivery(delivery_auth());
-        console.log(delivery);
-        reset({
-            name: delivery?.name,
-            phone: delivery?.phone,
-            city: delivery?.city,
-            address: delivery?.address,
-        });
-    }, []);
 
     return (
         <div align="center">
@@ -131,7 +136,11 @@ const Profile = () => {
                         <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="cpassword" type="password" placeholder="******************" {...register("cpassword")} />
                     </div>
                     <div className="flex items-center justify-between">
-                        <button className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                        <button 
+                        disabled={isDisabled}
+                        className={`bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                            }`}
+                         type="submit">
                             Update
                         </button>
                     </div>
@@ -141,4 +150,4 @@ const Profile = () => {
     )
 }
 
-export default withDeliveryAuth(Profile)
+export default Profile

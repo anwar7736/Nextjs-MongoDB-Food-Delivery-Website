@@ -8,7 +8,8 @@ const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [order, setOrder] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
-  
+  const [isDisabled, setIsDisabled] = useState(false);
+
   const getOrderList = async () => {
     const user = await user_auth();
     let res = await fetch(`/api/v1/order?type=user&id=${user._id}`)
@@ -21,12 +22,18 @@ const Dashboard = () => {
 
   }
   const showInvoice = async (id) => {
+    setIsDisabled(true);
     let res = await fetch(`/api/v1/order/${id}`)
     res = await res.json();
 
     if (res.success) {
       setOrder(res.data[0]);
       setModalOpen(true);
+      setIsDisabled(false);
+    }
+    else {
+      setIsDisabled(false);
+      console.log(res);
     }
   }
   useEffect(() => {
@@ -105,7 +112,11 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="bg-black p-2 text-white rounded" onClick={() => showInvoice(order?._id)}>View</button>
+                      <button
+                        disabled={isDisabled}
+                        className={`bg-black p-2 text-white rounded ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                          }`}
+                         onClick={() => showInvoice(order?._id)}>View</button>
                     </td>
                   </tr>
                 )

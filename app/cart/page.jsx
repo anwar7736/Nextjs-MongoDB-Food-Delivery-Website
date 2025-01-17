@@ -6,7 +6,7 @@ import { session, session_destroy } from "../helpers/SessionHelper";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { hasCookie } from "cookies-next";
-import cogoToast from "cogo-toast-react-17-fix";
+import { toast } from "react-toastify";
 
 const Cart = () => {
     const router = useRouter();
@@ -30,7 +30,7 @@ const Cart = () => {
         }
 
         setCart(session('cart'));
-        cogoToast.success("Item has been removed.");
+        toast.success("Item has been removed.");
     }
 
     const quantityChange = (item, newQty) => {
@@ -41,7 +41,7 @@ const Cart = () => {
             cartItems[index].quantity = Number(newQty);
             session('cart', cartItems);
             setCart(session('cart'));
-            cogoToast.success("Item quantity updated.");
+            toast.success("Item quantity updated.");
         }
         
     }
@@ -54,7 +54,7 @@ const Cart = () => {
             cartItems[index].quantity++;
             session('cart', cartItems);
             setCart(session('cart'));
-            cogoToast.success("Item quantity increased.");
+            toast.success("Item quantity increased.");
         }
     }
 
@@ -68,7 +68,7 @@ const Cart = () => {
                 cartItems[index].quantity--;
                 session('cart', cartItems);
                 setCart(session('cart'));
-                cogoToast.success("Item quantity decreased.");
+                toast.success("Item quantity decreased.");
             }
         }
     }

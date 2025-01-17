@@ -1,7 +1,7 @@
 "use client";
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
-import toast from 'cogo-toast-react-17-fix';
+import { toast } from "react-toastify";
 import ValidationError from "@/app/_components/ValidationError";
 import { useEffect, useState } from "react";
 import withAuth from "@/app/hoc/withAuth";

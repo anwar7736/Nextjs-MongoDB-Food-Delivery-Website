@@ -1,11 +1,13 @@
 import localFont from "next/font/local";
 import "./css/globals.css";
+import 'react-toastify/dist/ReactToastify.css';
 import Header from "./_components/layouts/Header";
 import Footer from "./_components/layouts/Footer";
 import AuthContextProvider from "./contexts/AuthContext";
 import CartContextProvider from "./contexts/CartContext";
 import UserAuthContextProvider from "./contexts/UserAuthContext";
 import DeliveryAuthContextProvider from "./contexts/DeliveryAuthContext";
+import { ToastContainer } from "react-toastify";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -34,6 +36,7 @@ export default function RootLayout({ children }) {
               <DeliveryAuthContextProvider>
                 <Header />
                 {children}
+                <ToastContainer />
                 <Footer />
               </DeliveryAuthContextProvider>
             </AuthContextProvider>

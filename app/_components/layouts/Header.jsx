@@ -4,7 +4,7 @@ import { CartContext } from "@/app/contexts/CartContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper"
-import cogoToast from "cogo-toast-react-17-fix";
+import { toast } from "react-toastify";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
@@ -41,16 +41,7 @@ const Header = () => {
   }, [isMenuOpen]);
 
   useEffect(() => {
-    const handleResize = () => {
-      // Close the menu if the window is resized to a width larger than a breakpoint (e.g., 1024px)
-      if (window.innerWidth >= 1024) {
-        setIsMenuOpen(true);
-      }
-      else{
-        setIsMenuOpen(false);
-      }
-    };
-
+    handleResize();
     // Attach the resize event listener
     window.addEventListener('resize', handleResize);
 
@@ -59,6 +50,16 @@ const Header = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  const handleResize = () => {
+    // Close the menu if the window is resized to a width larger than a breakpoint (e.g., 1024px)
+    if (window.innerWidth >= 1024) {
+      setIsMenuOpen(true);
+    }
+    else{
+      setIsMenuOpen(false);
+    }
+  };
 
   const Logout = async (type) => {
     Swal.fire({
@@ -85,7 +86,7 @@ const Header = () => {
           setDelivery(delivery_auth());
         }
 
-        cogoToast.success('Logout successfully.');
+        toast.success('Logout successfully.');
         router.push('/');
       }
     });

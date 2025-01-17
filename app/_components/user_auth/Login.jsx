@@ -1,10 +1,10 @@
 import { useForm } from "react-hook-form";
-import toast from 'cogo-toast-react-17-fix';
+import { toast } from "react-toastify";
 import { useRouter } from 'next/navigation'
 import ValidationError from "../ValidationError";
 import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper";
 import { deleteCookie, setCookie } from "cookies-next";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
@@ -13,6 +13,7 @@ const Login = () => {
     const {auth, setAuth} = useContext(AuthContext);
     const {user, setUser} = useContext(UserAuthContext);
     const {delivery, setDelivery} = useContext(DeliveryAuthContext);
+    const [isDisabled, setIsDisabled] = useState(false);
     const router = useRouter();
     const {
         register,
@@ -26,8 +27,8 @@ const Login = () => {
         }
       });
     const loginFormHandler = async (data) => {
+        setIsDisabled(true);
         data.login = true;
-
         let res = await fetch("api/v1/user", {
             method: "POST",
             body: JSON.stringify(data)
@@ -54,6 +55,7 @@ const Login = () => {
             toast.success("Login Successfully");
         }
         else{
+            setIsDisabled(false);
             toast.error("Invalid credentials.");
         }
         
@@ -79,7 +81,11 @@ const Login = () => {
                         {errors.password && <ValidationError message={errors.password.message} />}
                     </div>
                     <div className="flex items-center justify-between">
-                        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                        <button 
+                        disabled={isDisabled}
+                        className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                            }`}
+                         type="submit">
                             Login
                         </button>
                         <button className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" type="button">

@@ -1,6 +1,6 @@
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
-import toast from 'cogo-toast-react-17-fix';
+import { toast } from "react-toastify";
 import ValidationError from "../../ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 const AddFood = (props) => {

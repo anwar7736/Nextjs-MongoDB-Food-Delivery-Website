@@ -5,7 +5,7 @@ import { isUserAuth, user_auth } from "../helpers/helper";
 import Link from "next/link";
 import { session, session_destroy } from "../helpers/SessionHelper";
 import withUserAuth from "../hoc/withUserAuth";
-import cogoToast from "cogo-toast-react-17-fix";
+import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 const PlaceOrder = () => {
@@ -13,6 +13,7 @@ const PlaceOrder = () => {
     const { cart, setCart } = useContext(CartContext);
     const [subTotal, setSubTotal] = useState(0);
     const [shippingCharge, setShippingCharge] = useState(50);
+    const [isDisabled, setIsDisabled] = useState(false);
     const calculateSubTotal = () => {
         const total = cart.reduce((total, item) => total + (item.quantity * item.price), 0);
         return total;
@@ -31,7 +32,7 @@ const PlaceOrder = () => {
         }
 
         setCart(session('cart'));
-        cogoToast.success("Item has been removed.");
+        toast.success("Item has been removed.");
     }
 
     const quantityChange = (item, newQty) => {
@@ -41,7 +42,7 @@ const PlaceOrder = () => {
             cartItems[index].quantity = Number(newQty);
             session('cart', cartItems);
             setCart(session('cart'));
-            cogoToast.success("Item quantity updated.");
+            toast.success("Item quantity updated.");
         }
 
     }
@@ -53,7 +54,7 @@ const PlaceOrder = () => {
             cartItems[index].quantity++;
             session('cart', cartItems);
             setCart(session('cart'));
-            cogoToast.success("Item quantity increased.");
+            toast.success("Item quantity increased.");
         }
     }
 
@@ -65,12 +66,13 @@ const PlaceOrder = () => {
                 cartItems[index].quantity--;
                 session('cart', cartItems);
                 setCart(session('cart'));
-                cogoToast.success("Item quantity decreased.");
+                toast.success("Item quantity decreased.");
             }
         }
     }
 
     const orderSubmit = async () => {
+        setIsDisabled(true);
         let data = {
             "user_id": user_auth()._id,
             "restaurant_id": cart[0].restaurant_id,
@@ -95,8 +97,12 @@ const PlaceOrder = () => {
         if (res.success) {
             session_destroy('cart');
             setCart(session('cart'));
-            cogoToast.success(res.message);
+            toast.success(res.message);
             router.push('/user/dashboard');
+        }
+        else{
+            setIsDisabled(false);
+            toast.success(res.message);
         }
     }
     return (
@@ -151,7 +157,11 @@ const PlaceOrder = () => {
                                 <p><b>Total Amount:</b>{subTotal + shippingCharge}</p>
                             </div>
                             <div align="left" className=" mt-3">
-                                <button onClick={() => orderSubmit()} className="order-now-btn">Plce Order</button>
+                                <button 
+                                disabled={isDisabled}
+                                className={`order-now-btn ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                                 }`} 
+                                onClick={() => orderSubmit()}>Place Order</button>
                             </div>
                         </div>
                     </div>)

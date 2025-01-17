@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useRouter } from 'next/navigation'
-import toast from 'cogo-toast-react-17-fix';
+import { toast } from "react-toastify";
 import ValidationError from "../ValidationError";
 import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper";
 import { deleteCookie, setCookie } from "cookies-next";
@@ -14,6 +14,7 @@ const SignUp = () => {
   const {auth, setAuth} = useContext(AuthContext);
   const {user, setUser} = useContext(UserAuthContext);
   const {delivery, setDelivery} = useContext(DeliveryAuthContext);
+  const [isDisabled, setIsDisabled] = useState(false);
   const {
     register,
     handleSubmit,
@@ -22,6 +23,7 @@ const SignUp = () => {
   } = useForm();
 
   const signupFormHandler = async (data) => {
+    setIsDisabled(true);
     data.login = false;
     let res = await fetch("api/v1/user", {
         method: "POST",
@@ -50,6 +52,7 @@ const SignUp = () => {
         toast.success(res.message);
     }
     else{
+        setIsDisabled(false);
         toast.error(res.message);
         console.log(res);
     }
@@ -106,7 +109,11 @@ const SignUp = () => {
             <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="cpassword" type="password" placeholder="******************" {...register("cpassword", {required:'This field is required.'})}/>
           </div>
           <div className="flex items-center justify-between">
-            <button className="bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+            <button 
+              disabled={isDisabled}
+              className={`bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                  }`}
+            type="submit">
               Register
             </button>
           </div>
