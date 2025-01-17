@@ -52,14 +52,19 @@ const Explore = (props) => {
   return (
     <div>
       <div className="restaurant-page-banner">
-        <h1>{restaurantDetails?.name && decodeURI(restaurantDetails.name)}</h1>
+      <h1 className="text-lg">
+  {restaurantDetails?.name && decodeURI(restaurantDetails.name)}
+</h1>
+
+
       </div>
-      <div className="details-wrapper">
-        <h4>Contact : {restaurantDetails?.phone}</h4>
-        <h4>City:{restaurantDetails?.city}</h4>
-        <h4>Address:{restaurantDetails?.address}</h4>
-        <h4>Email:{restaurantDetails?.email}</h4>
+      <div className="flex justify-between flex-wrap bg-green-200 p-2 text-sm text-black">
+        <h4>Contact: {restaurantDetails?.phone}</h4>
+        <h4>Email: {restaurantDetails?.email}</h4>
+        <h4>City: {restaurantDetails?.city}</h4>
+        <h4>Address: {restaurantDetails?.address}</h4>
       </div>
+
       <div className="food-list-wrapper">
         {
           foodItems.length > 0 ? foodItems.map((item) => (

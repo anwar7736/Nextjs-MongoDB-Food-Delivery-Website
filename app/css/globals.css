@@ -86,49 +86,109 @@ body {
 
 .restaurant-list-container {
   display: flex;
-  flex-direction: row;
   flex-wrap: wrap;
-  margin-top: 40px;
-  margin-bottom: 50px;
+  gap: 16px;
 }
 
 .restaurant-wrapper {
-  max-width: 70%;
-  background-color: rgb(101, 202, 76);
-  margin: 10px;
-  padding: 10px;
-  border: 1px solid #aaa;
-  border-radius: 5px;
-  cursor: pointer;
+  flex: 1 1 calc(100% - 32px); /* Full width on small screens */
+  max-width: 100%; /* Restrict max width */
+  padding: 16px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s;
+  text-decoration: none;
 }
 
-.restaurant-wrapper .heading-wrapper,
-.restaurant-wrapper .address-wrapper {
-  padding-left: 15px;
-  display: flex;
-  justify-content: flex-start;
+.restaurant-wrapper:hover {
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
 }
 
-.restaurant-wrapper h5 {
-  margin-left: 15px;
+.heading-wrapper h3 {
+  font-size: 1.25rem; /* Responsive base font size */
+  margin-bottom: 0.5rem;
 }
 
-.restaurant-wrapper .address {
-  margin-left: 5px;
+.heading-wrapper h5 {
+  font-size: 1rem;
+  color: #666;
 }
 
-.restaurant-page-banner h1 {
-  font-size: 65px;
+.address-wrapper {
+  font-size: 0.875rem;
+  color: #555;
+  text-align: left;
 }
+
+@media (min-width: 768px) {
+  .restaurant-wrapper {
+    flex: 1 1 calc(50% - 32px); /* Two per row on medium screens */
+  }
+
+  .heading-wrapper h3 {
+    font-size: 1.5rem;
+  }
+
+  .heading-wrapper h5 {
+    font-size: 1.125rem;
+  }
+
+  .address-wrapper {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .restaurant-wrapper {
+    flex: 1 1 calc(33.333% - 32px); /* Three per row on large screens */
+  }
+}
+
+
 
 .details-wrapper {
   display: flex;
-  background-color: orange;
+  flex-wrap: wrap; /* Wrap items on small devices */
+  gap: 5px; /* Add spacing between items */
+  padding: 16px; /* Add padding around the container */
 }
 
 .details-wrapper h4 {
-  width: 50%;
+  flex: 1 1 100%; /* Full width on small screens */
 }
+
+@media (min-width: 1024px) { /* Large screens */
+  .details-wrapper {
+    flex-wrap: nowrap; /* Inline layout */
+  }
+
+  .details-wrapper h4 {
+    flex: 0 1 auto; /* Adjust width to fit content */
+  }
+}
+
+
+@media (min-width: 768px) {
+  .details-wrapper {
+    padding: 24px;
+  }
+
+  .details-wrapper h4 {
+    font-size: 16px; /* Medium screens */
+  }
+}
+
+@media (min-width: 1024px) {
+  .details-wrapper {
+    padding: 32px;
+  }
+
+  .details-wrapper h4 {
+    font-size: 18px; /* Large screens */
+  }
+}
+
 
 .food-list-wrapper {
   margin-bottom: 50px;

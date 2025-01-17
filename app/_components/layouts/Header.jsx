@@ -8,7 +8,7 @@ import cogoToast from "cogo-toast-react-17-fix";
 import { deleteCookie } from "cookies-next";
 import Link from "next/link"
 import { useRouter } from "next/navigation";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 const Header = () => {
   const { auth, setAuth } = useContext(AuthContext);
@@ -16,8 +16,8 @@ const Header = () => {
   const { delivery, setDelivery } = useContext(DeliveryAuthContext);
   const { cart, setCart } = useContext(CartContext);
   const router = useRouter();
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -26,11 +26,28 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  const handleClickOutside = (event) => {
+    if (menuRef.current && !menuRef.current.contains(event.target) && window.innerWidth < 1024) {
+      closeMenu();
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    // Cleanup
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [isMenuOpen]);
+
   useEffect(() => {
     const handleResize = () => {
       // Close the menu if the window is resized to a width larger than a breakpoint (e.g., 1024px)
       if (window.innerWidth >= 1024) {
         setIsMenuOpen(true);
+      }
+      else{
+        setIsMenuOpen(false);
       }
     };
 
@@ -80,11 +97,11 @@ const Header = () => {
           <Link href="/"><img src="/logo.png" alt="logo" className='w-12' />
           </Link>
 
-          <div id="collapseMenu"
+          <div  id="collapseMenu"
           className={`${
             isMenuOpen ? 'block' : 'hidden'
           } max-lg:before:fixed max-lg:before:bg-black max-lg:before:opacity-50 max-lg:before:inset-0 max-lg:before:z-50`}>
-            <button onClick={()=> closeMenu()} id="toggleClose" className='lg:hidden fixed top-2 right-4 z-[100] rounded-full bg-white p-3'>
+            <button title="Close Menu" onClick={()=> closeMenu()} id="toggleClose" className='lg:hidden fixed top-2 right-4 z-[100] rounded-full bg-white p-3'>
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 fill-black" viewBox="0 0 320.591 320.591">
                 <path
                   d="M30.391 318.583a30.37 30.37 0 0 1-21.56-7.288c-11.774-11.844-11.774-30.973 0-42.817L266.643 10.665c12.246-11.459 31.462-10.822 42.921 1.424 10.362 11.074 10.966 28.095 1.414 39.875L51.647 311.295a30.366 30.366 0 0 1-21.256 7.288z"
@@ -177,7 +194,7 @@ const Header = () => {
                 )
             }
 
-            <button onClick={()=> toggleMenu()} id="toggleOpen" className='lg:hidden'>
+            <button title="Toggle Menu" ref={menuRef} onClick={()=> toggleMenu()} id="toggleOpen" className='lg:hidden'>
               <svg className="w-7 h-7" fill="#000" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd"
                   d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"

@@ -78,22 +78,25 @@ export default function Home() {
         </div>
       </div>
       <div className="restaurant-list-container">
-        {
-          restaurants.map((item) => (
-            <Link key={item._id} href={`explore/${item._id}`} className="restaurant-wrapper">
-              <div className="heading-wrapper">
-                <h3>{item.name}</h3>
-                <h5>Contact:{item.contact}</h5>
-              </div>
-              <div className="address-wrapper">
-                <div>{item.city},</div>
-                <div className="address"> {item.address}, Email: {item.email}</div>
+  {
+    restaurants.map((item) => (
+      <Link
+        key={item._id}
+        href={`explore/${item._id}`}
+        className="restaurant-wrapper bg-green-200 my-2 p-4 border rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+      > 
+        <div className="heading-wrapper text-left mb-2">
+          <h3 className="text-lg md:text-xl font-semibold">{item.name}</h3>
+          <h6 className="text-sm md:text-base text-gray-600">Phone: {item.phone}</h6>
+          <h6 className="text-sm md:text-base text-gray-600">Email: {item.email}</h6>
+          <h6 className="text-sm md:text-base text-gray-600">City: {item.city}</h6>
+          <h6 className="text-sm md:text-base text-gray-600">Address: {item.address}</h6>
+        </div>
+      </Link>
+    ))
+  }
+</div>
 
-              </div>
-            </Link>
-          ))
-        }
-      </div>
     </main>
   );
 }
