@@ -4,12 +4,14 @@ import { useState, useEffect } from "react"
 import InvoiceModal from "@/app/_components/order/InvoiceModal";
 import Swal from "sweetalert2";
 import Link from "next/link";
+import { toast } from "react-toastify";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [order, setOrder] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
-
+  const [isDisabled, setIsDisabled] = useState(false);
+  
   const getOrderList = async () => {
     const user = await restaurant_auth();
     let res = await fetch(`/api/v1/order?type=restaurant&id=${user._id}`)
@@ -22,16 +24,21 @@ const OrderList = () => {
 
   }
   const showInvoice = async (id) => {
+    setIsDisabled(true);
     let res = await fetch(`/api/v1/order/${id}`)
     res = await res.json();
-
     if (res.success) {
       setOrder(res.data[0]);
       setModalOpen(true);
+      setIsDisabled(false);
+    } else {
+      setIsDisabled(false);
+      toast.error(res);
     }
   }
 
   const deleteItem = async (id) => {
+    setIsDisabled(true);
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -54,11 +61,11 @@ const OrderList = () => {
             icon: "success"
           });
         }
-
       }
+      setIsDisabled(false);
     });
   }
-  
+
   useEffect(() => {
     getOrderList();
   }, []);
@@ -137,11 +144,19 @@ const OrderList = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 flex justify-between" >
-                    <button className="bg-black p-2 text-white rounded" onClick={() => showInvoice(order?._id)}>View</button>
-                    &nbsp;
-                    <Link href={`/restaurant/order/edit/${order?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
-                    &nbsp;
-                    <button className="bg-red-600 p-2 text-white rounded" onClick={() => deleteItem(order?._id)}>Delete</button>
+                      <button
+                        disabled={isDisabled}
+                        className={`bg-black p-2 text-white rounded ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                          }`}
+                         onClick={() => showInvoice(order?._id)}>View</button>
+                      &nbsp;
+                      <Link href={`/restaurant/order/edit/${order?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
+                      &nbsp;
+                      <button
+                        disabled={isDisabled}
+                        className={`bg-red-600 p-2 text-white rounded ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                          }`}
+                         onClick={() => deleteItem(order?._id)}>Delete</button>
                     </td>
                   </tr>
                 )

@@ -16,6 +16,7 @@ const EditOrder = ({ params }) => {
     const [foodItems, setFoodItems] = useState([]);
     const [rows, setRows] = useState([]);
     const [order, setOrder] = useState([]);
+    const [isDisabled, setIsDisabled] = useState(false);
     const [summary, setSummary] = useState({ total: 0, shipping_charge: 50, final_total: 0 });
     const {
         register,
@@ -26,11 +27,13 @@ const EditOrder = ({ params }) => {
     } = useForm();
 
     const submitFormHandler = async (data) => {
+        setIsDisabled(true);
         data.total = summary.total;
         data.shipping_charge = summary.shipping_charge;
         data.final_total = summary.final_total;
         data.items = rows.filter(row => row.id != '' && row.quantity > 0 && row.price > 0);
         if (data.items.length == 0) {
+            setIsDisabled(false);
             toast.error('Please choose atleast one item!');
             return;
         }
@@ -45,6 +48,7 @@ const EditOrder = ({ params }) => {
             router.push('/restaurant/dashboard');
         }
         else {
+            setIsDisabled(false);
             toast.error(res.message);
             console.log(res);
         }
@@ -316,7 +320,11 @@ const EditOrder = ({ params }) => {
                             </tfoot>
                         </table>
                         <div align="center" className="mt-5">
-                            <button className="bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline" type="submit">
+                            <button
+                                disabled={isDisabled}
+                                className={`bg-green-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                                    }`}
+                                type="submit">
                                 Update Order
                             </button>
                         </div>

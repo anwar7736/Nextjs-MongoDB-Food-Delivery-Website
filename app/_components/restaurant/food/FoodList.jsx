@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 const FoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
+  const [isDisabled, setIsDisabled] = useState(false);
   const getFoodList = async () => {
     const restaurant = await restaurant_auth();
     let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${restaurant._id}`)
@@ -17,6 +18,7 @@ const FoodList = () => {
   }
 
   const deleteItem = async (_id) => {
+    setIsDisabled(true);
     Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
@@ -41,7 +43,9 @@ const FoodList = () => {
         }
 
       }
+      setIsDisabled(false);
     });
+
   }
 
   useEffect(() => {
@@ -85,7 +89,11 @@ const FoodList = () => {
                   <td className="px-6 py-4 flex" >
                     <Link href={`/restaurant/edit_food/${item?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
                     &nbsp;
-                    <button onClick={() => deleteItem(item?._id)} className="bg-red-600 p-2 text-white rounded">Delete</button>
+                    <button 
+                      disabled={isDisabled}
+                      className={`bg-red-600 p-2 text-white rounded ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                        }`}
+                    onClick={() => deleteItem(item?._id)}>Delete</button>
                   </td>
                 </tr>
               )

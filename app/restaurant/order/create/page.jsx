@@ -12,6 +12,7 @@ const PlaceOrder = () => {
     const [deliveries, setDeliveries] = useState([]);
     const [statuses, setStatuses] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
+    const [isDisabled, setIsDisabled] = useState(false);
     const [rows, setRows] = useState([{ id: "", quantity: 1, price: 0 }]);
     const [summary, setSummary] = useState({ total: 0, shipping_charge: 50, final_total: 0 });
     const {
@@ -22,17 +23,18 @@ const PlaceOrder = () => {
     } = useForm();
 
     const submitFormHandler = async (data) => {
+        setIsDisabled(true);
         const restaurant = await restaurant_auth();
         data.restaurant_id = restaurant._id;
         data.total = summary.total;
         data.shipping_charge = summary.shipping_charge;
         data.final_total = summary.final_total;
         data.items = rows.filter(row => row.id != '' && row.quantity > 0 && row.price > 0);
-        if(data.items.length == 0)
-            {
-                toast.error('Please choose atleast one item!');
-                return;
-            }
+        if (data.items.length == 0) {
+            setIsDisabled(false);
+            toast.error('Please choose atleast one item!');
+            return;
+        }
         let res = await fetch("/api/v1/order", {
             method: "POST",
             body: JSON.stringify(data)
@@ -44,6 +46,7 @@ const PlaceOrder = () => {
             router.push('/restaurant/dashboard');
         }
         else {
+            setIsDisabled(false);
             toast.error(res.message);
             console.log(res);
         }
@@ -85,7 +88,7 @@ const PlaceOrder = () => {
         if (count > 0 || !id) {
             oldData[index].id = "";
             oldData[index].price = 0;
-            if(count > 0){
+            if (count > 0) {
                 toast.error('Duplicate item not allowed!');
             }
         }
@@ -148,7 +151,7 @@ const PlaceOrder = () => {
     const getAllFoodItems = async () => {
         const restaurant = await restaurant_auth();
         let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${restaurant._id}`);
-            res = await res.json();
+        res = await res.json();
         if (res.success) {
             setFoodItems(res.foodItems);
         }
@@ -297,7 +300,11 @@ const PlaceOrder = () => {
                             </tfoot>
                         </table>
                         <div align="center" className="mt-5">
-                            <button className="bg-black hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                            <button
+                                disabled={isDisabled}
+                                className={`bg-black hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
+                                    }`}
+                                type="submit">
                                 Submit Order
                             </button>
                         </div>
