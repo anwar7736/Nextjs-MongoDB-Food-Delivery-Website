@@ -19,9 +19,7 @@ ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
 RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000

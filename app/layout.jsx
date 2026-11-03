@@ -8,6 +8,7 @@ import CartContextProvider from "./contexts/CartContext";
 import UserAuthContextProvider from "./contexts/UserAuthContext";
 import DeliveryAuthContextProvider from "./contexts/DeliveryAuthContext";
 import PWARegister from "./_components/PWARegister";
+import SupportWidget from "./_components/SupportWidget";
 import { ToastContainer } from "react-toastify";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -48,6 +49,7 @@ export default function RootLayout({ children }) {
                 <Header />
                 {children}
                 <ToastContainer />
+                <SupportWidget />
                 <Footer />
               </DeliveryAuthContextProvider>
             </AuthContextProvider>
