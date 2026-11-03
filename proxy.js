@@ -15,7 +15,7 @@ function requiredAccountType(pathname) {
   return null;
 }
 
-export async function middleware(request) {
+export async function proxy(request) {
   const pathname = request.nextUrl.pathname;
   const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
   const requiredType = requiredAccountType(pathname);

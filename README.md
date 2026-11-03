@@ -21,6 +21,19 @@ A Next.js food delivery app with customer, restaurant, and delivery-partner acco
 
 The app is served at `http://localhost:3000`. A reachable MongoDB connection is required for database-backed pages and APIs.
 
+## Run with Docker Compose
+
+1. Copy `.env.example` to `.env` and set `TOTP_ENCRYPTION_KEY` to a random value of at least 32 characters. Keep this key stable; it encrypts authenticator secrets.
+2. Start the app and bundled MongoDB:
+
+   ```bash
+   docker compose up --build -d
+   ```
+
+   Open `http://localhost:3000`. MongoDB data is stored in the `mongodb_data` volume and is not published to the host.
+3. To use MongoDB Atlas or another MongoDB server, set `MONGODB_URI` in `.env`. Leave it empty to use the bundled MongoDB service.
+4. Stop the services with `docker compose down`. This keeps database data; `docker compose down -v` also deletes it.
+
 ## Authenticator two-factor authentication
 
 Customers, restaurants, and delivery partners can enable authenticator-based two-factor authentication from their profile. Confirm setup by scanning the QR code and entering a current six-digit code. Subsequent sign-ins verify the code automatically after all six digits are entered. Secrets are encrypted in MongoDB; they are never returned by account APIs.
