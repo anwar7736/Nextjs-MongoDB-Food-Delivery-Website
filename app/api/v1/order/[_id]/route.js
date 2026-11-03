@@ -4,9 +4,35 @@ import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import { orderItemSchema } from "@/app/models/orderItemModel";
 import { orderStatusLogSchema } from "@/app/models/orderStatusLogModel";
-mongoDB_connect();
+import { verifyAuthSession } from "@/app/lib/session";
+import { foodSchema } from "@/app/models/foodModel";
+import { userSchema } from "@/app/models/userModel";
+import { deliverySchema } from "@/app/models/deliveryModel";
+import { restaurantSchema } from "@/app/models/restaurantModel";
+
 export async function GET(request, { params }) {
   let { _id } = params;
+  const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
+  if (!session) {
+    return NextResponse.json({ success: false, message: "Sign in to view this order." }, { status: 401 });
+  }
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
+  }
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
+  }
+  await mongoDB_connect();
+  const orderRecord = await orderSchema.findById(_id);
+  const ownsOrder = orderRecord && (
+    (session.type === "restaurant" && String(orderRecord.restaurant_id) === session.id) ||
+    (session.type === "user" && String(orderRecord.user_id) === session.id) ||
+    (session.type === "delivery" && String(orderRecord.delivery_partner_id) === session.id)
+  );
+  if (!ownsOrder) {
+    return NextResponse.json({ success: false, message: "You are not authorized to view this order." }, { status: 403 });
+  }
+
   let success = false;
   let data = [];
   data = await orderSchema.aggregate([
@@ -119,78 +145,98 @@ export async function GET(request, { params }) {
 
 export async function PUT(request, { params }) {
   let { _id } = params;
-  let success = false;
-  let message = "";
-  let date = new Date().toLocaleDateString();
-  try {
-    request = await request.json();
-    const oldOrder = await orderSchema.findById(_id);
-    let orderInput = {
-      "user_id": request.user_id,
-      "delivery_partner_id": request.delivery_partner_id,
-      "total": request.total,
-      "shipping_charge": request.shipping_charge,
-      "final_total": (request.total + request.shipping_charge),
-    };
-    let statusLogInput = [];
-    if(oldOrder.status_id != request.status_id)
-    {
-      orderInput.status_id = request.status_id;
-      statusLogInput = {
-        "order_id": _id,
-        "status_id": request.status_id,
-        "date": date
-    };
-
-    }
-    const order = await orderSchema.findOneAndUpdate({ _id }, { $set: orderInput });
-    if (order) {
-      const itemDeleted = await orderItemSchema.deleteMany({ order_id: _id });
-      let orderItemInput = [];
-      request.items.map(item => {
-        orderItemInput.push({
-          "order_id": _id,
-          "food_id": item.id,
-          "quantity": item.quantity,
-          "price": item.price,
-          "total": (item.price * item.quantity)
-        });
-      });
-
-      let items = await orderItemSchema.insertMany(orderItemInput);
-      if (items) {
-        if(statusLogInput)
-        {
-          let statusLog = await orderStatusLogSchema(statusLogInput);
-          statusLog = await statusLog.save();
-        }
-
-        success = true;
-        message = "Order updated successfully.";
-      }
-    }
-  } catch (error) {
-    console.error("Error:", error.message);
-    message = error.message;
+  const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
+  if (session?.type !== "restaurant") {
+    return NextResponse.json({ success: false, message: "Restaurant sign-in is required." }, { status: 401 });
+  }
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
   }
 
-  return NextResponse.json({ success, message });
+  try {
+    await mongoDB_connect();
+    const payload = await request.json();
+    const oldOrder = await orderSchema.findOne({ _id, restaurant_id: session.id });
+    if (!oldOrder) {
+      return NextResponse.json({ success: false, message: "Order not found." }, { status: 404 });
+    }
+    if (!mongoose.Types.ObjectId.isValid(payload.user_id) ||
+        !mongoose.Types.ObjectId.isValid(payload.delivery_partner_id) ||
+        !Array.isArray(payload.items) || payload.items.length === 0 ||
+        !Number.isFinite(Number(payload.shipping_charge)) || Number(payload.shipping_charge) < 0 ||
+        payload.items.some((item) => !mongoose.Types.ObjectId.isValid(item.id) ||
+          !Number.isInteger(Number(item.quantity)) || Number(item.quantity) < 1 ||
+          Number(item.quantity) > 99 || !Number.isFinite(Number(item.price)) || Number(item.price) < 0)) {
+      return NextResponse.json({ success: false, message: "Invalid order details." }, { status: 400 });
+    }
+
+    const [customer, deliveryPartner, foods] = await Promise.all([
+      userSchema.findById(payload.user_id),
+      deliverySchema.findOne({ _id: payload.delivery_partner_id, city: (await restaurantSchema.findById(session.id))?.city }),
+      foodSchema.find({ _id: { $in: payload.items.map((item) => item.id) }, restaurant_id: session.id }),
+    ]);
+    if (!customer || !deliveryPartner || foods.length !== payload.items.length) {
+      return NextResponse.json({ success: false, message: "Customer, delivery partner, or food item is invalid." }, { status: 400 });
+    }
+
+    const orderItemInput = payload.items.map((item) => ({
+      order_id: _id,
+      food_id: item.id,
+      quantity: Number(item.quantity),
+      price: Number(item.price),
+      total: Number(item.price) * Number(item.quantity),
+    }));
+    const total = orderItemInput.reduce((sum, item) => sum + item.total, 0);
+    const shippingCharge = Number(payload.shipping_charge);
+    const orderInput = {
+      user_id: customer._id,
+      delivery_partner_id: deliveryPartner._id,
+      total,
+      shipping_charge: shippingCharge,
+      final_total: total + shippingCharge,
+    };
+    const statusChanged = String(oldOrder.status_id) !== String(payload.status_id);
+    if (statusChanged && mongoose.Types.ObjectId.isValid(payload.status_id)) {
+      orderInput.status_id = payload.status_id;
+    }
+
+    await orderSchema.updateOne({ _id, restaurant_id: session.id }, { $set: orderInput });
+    await orderItemSchema.deleteMany({ order_id: _id });
+    await orderItemSchema.insertMany(orderItemInput);
+    if (statusChanged && orderInput.status_id) {
+      await new orderStatusLogSchema({
+        order_id: _id,
+        status_id: orderInput.status_id,
+        date: new Date(),
+      }).save();
+    }
+
+    return NextResponse.json({ success: true, message: "Order updated successfully." });
+  } catch (error) {
+    console.error("Order update failed:", error.message);
+    return NextResponse.json({ success: false, message: "Unable to update this order." }, { status: 500 });
+  }
 }
 
 export async function DELETE(request, { params }) {
   let { _id } = params;
-  let success = false;
-  let data = [];
-  let message = "";
-  const itemDeleted = await orderItemSchema.deleteMany({ order_id: _id });
-  if (itemDeleted) {
-    data = await orderSchema.deleteOne({ _id });
-    if (data) {
-      success = true;
-      message = "Order has been deleted";
-    }
+  const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
+  if (session?.type !== "restaurant") {
+    return NextResponse.json({ success: false, message: "Restaurant sign-in is required." }, { status: 401 });
+  }
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
   }
 
-  return NextResponse.json({ success, message });
+  await mongoDB_connect();
+  const order = await orderSchema.findOne({ _id, restaurant_id: session.id });
+  if (!order) {
+    return NextResponse.json({ success: false, message: "Order not found." }, { status: 404 });
+  }
+  await orderItemSchema.deleteMany({ order_id: _id });
+  await orderStatusLogSchema.deleteMany({ order_id: _id });
+  await orderSchema.deleteOne({ _id, restaurant_id: session.id });
+
+  return NextResponse.json({ success: true, message: "Order has been deleted." });
 
 }

@@ -2,9 +2,21 @@ import mongoose from "mongoose"
 import { connectionStr } from "../lib/db"
 import { getCookie, hasCookie } from "cookies-next";
 
-export const mongoDB_connect = async () => 
-{
-    return await mongoose.connect(connectionStr);
+let connectionPromise;
+
+export const mongoDB_connect = () => {
+    if (mongoose.connection.readyState === 1) {
+        return Promise.resolve(mongoose);
+    }
+
+    if (!connectionPromise) {
+        connectionPromise = mongoose.connect(connectionStr, { serverSelectionTimeoutMS: 5000 }).catch((error) => {
+            connectionPromise = undefined;
+            throw error;
+        });
+    }
+
+    return connectionPromise;
 }
 
 export const restaurant_auth = () => 

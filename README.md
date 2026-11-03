@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# FoodDash
 
-## Getting Started
+A Next.js food delivery app with customer, restaurant, and delivery-partner accounts.
 
-First, run the development server:
+## Local setup
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Copy `.env.example` to `.env.local` and add your MongoDB credentials.
+2. Set `TOTP_ENCRYPTION_KEY` to a cryptographically random value of at least 32 characters. For example:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+   ```
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+   Keep this key private and use the same value wherever this database is deployed. It encrypts authenticator secrets; losing or changing it prevents enrolled accounts from verifying their codes.
+3. Install dependencies and start the app:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   npm ci
+   npm run dev
+   ```
 
-## Learn More
+The app is served at `http://localhost:3000`. A reachable MongoDB connection is required for database-backed pages and APIs.
 
-To learn more about Next.js, take a look at the following resources:
+## Authenticator two-factor authentication
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Customers, restaurants, and delivery partners can enable authenticator-based two-factor authentication from their profile. Confirm setup by scanning the QR code and entering a current six-digit code. Subsequent sign-ins verify the code automatically after all six digits are entered. Secrets are encrypted in MongoDB; they are never returned by account APIs.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Installable app
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The app includes a web manifest, app icons, a service worker, and an **Install App** header button. Installation prompts are available in supported browsers when served from HTTPS or localhost. On iOS, use the browser’s Share menu and choose **Add to Home Screen**.

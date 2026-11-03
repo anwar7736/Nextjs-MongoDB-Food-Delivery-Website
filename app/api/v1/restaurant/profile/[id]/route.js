@@ -1,17 +1,32 @@
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { verifyAuthSession } from "@/app/lib/session";
 const { mongoDB_connect } = require("@/app/helpers/helper");
 
-mongoDB_connect();
 export async function PUT(request, content) {
     let id = content.params.id;
     let success = false;
     let data = [];
     let message = "";
-    request = await request.json();
-    let phoneExistence = await restaurantSchema.findOne({ phone: request.phone, _id: { $ne: id } });
-    let emailExistence = await restaurantSchema.findOne({ email: request.email, _id: { $ne: id } });
+    const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
+    if (session?.type !== "restaurant" || session.id !== id) {
+        return NextResponse.json({ success: false, data, message: "You are not authorized to update this profile." }, { status: 401 });
+    }
+    await mongoDB_connect();
+    const payload = await request.json();
+    const fields = {
+        name: payload.name,
+        phone: payload.phone,
+        email: payload.email,
+        city: payload.city,
+        address: payload.address,
+    };
+    const update = Object.fromEntries(
+        Object.entries(fields).filter(([, value]) => typeof value === "string")
+    );
+    let phoneExistence = await restaurantSchema.findOne({ phone: fields.phone, _id: { $ne: id } });
+    let emailExistence = await restaurantSchema.findOne({ email: fields.email, _id: { $ne: id } });
     if (phoneExistence) {
         success = false;
         message = 'Phone number already used.';
@@ -30,8 +45,11 @@ export async function PUT(request, content) {
             message = "User not fond.";
             return NextResponse.json({ success, data, message });
         }
-        if (request.old_password) {
-            const passwordMatched = await bcrypt.compare(request.old_password, user.password);
+        if (payload.old_password) {
+            if (typeof payload.password !== "string" || payload.password.length < 4) {
+                return NextResponse.json({ success: false, data, message: "Provide a new password with at least 4 characters." });
+            }
+            const passwordMatched = await bcrypt.compare(payload.old_password, user.password);
             if (!passwordMatched) {
                 success = false;
                 message = "Old password is incorrect.";
@@ -39,18 +57,22 @@ export async function PUT(request, content) {
 
             }
 
-            request.password = await bcrypt.hash(request.password, 10);
+            update.password = await bcrypt.hash(payload.password, 10);
+        }
+        else if (payload.password) {
+            return NextResponse.json({ success: false, data, message: "Enter your current password before changing it." });
         }
 
-        if (request.password == '') {
-            delete request.password;
-        }
-
-        data = await restaurantSchema.updateOne({ _id: id }, { $set: request });
+        data = await restaurantSchema.updateOne({ _id: id }, { $set: update });
         if (data.modifiedCount > 0) {
             success = true;
             message = "Profile updated successfully.";
-            data = await restaurantSchema.findById(id, { password: 0 });
+            data = await restaurantSchema.findById(id, {
+                password: 0,
+                twoFactorSecret: 0,
+                twoFactorPendingSecret: 0,
+                twoFactorLastUsedStep: 0,
+            });
 
         } else {
             success = false;

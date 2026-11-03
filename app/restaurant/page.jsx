@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Login from "../_components/auth/Login";
 import SignUp from "../_components/auth/SignUp";
-import withGuest from "../hoc/withGuest";
 
 const Restaurant = () => {
     const [login, setLogin] = useState(true);
@@ -25,4 +24,4 @@ const Restaurant = () => {
   )
 }
 
-export default withGuest(Restaurant)
+export default Restaurant

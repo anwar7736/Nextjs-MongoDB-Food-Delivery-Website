@@ -7,6 +7,8 @@ import { delivery_auth } from "@/app/helpers/helper";
 import { setCookie } from "cookies-next";
 import { useContext, useEffect, useState } from "react";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
+import { redirect } from "next/navigation";
+import AuthenticatorSettings from "@/app/_components/auth/AuthenticatorSettings";
 const Profile = () => {
     const {delivery, setDelivery} = useContext(DeliveryAuthContext);
     const [isDisabled, setIsDisabled] = useState(false);
@@ -55,7 +57,8 @@ const Profile = () => {
     return (
         <div align="center">
             <title>Restaurant Profile</title>
-            <div className="w-full max-w-xs">
+            <AuthenticatorSettings accountType="delivery" account={auth} />
+            <div className="w-full max-w-2xl profile-form">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(signupFormHandler)}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">

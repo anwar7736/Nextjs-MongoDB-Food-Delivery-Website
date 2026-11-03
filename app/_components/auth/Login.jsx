@@ -8,52 +8,80 @@ import { useContext, useState } from "react";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
+import AuthenticatorCode from "./AuthenticatorCode";
 const Login = () => {
     const {auth, setAuth} = useContext(AuthContext);
     const {user, setUser} = useContext(UserAuthContext);
     const {delivery, setDelivery} = useContext(DeliveryAuthContext);
     const [isDisabled, setIsDisabled] = useState(false);
+    const [challenge, setChallenge] = useState("");
     const router = useRouter();
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors },
-      } = useForm({
-        defaultValues: {
-          email: 'test@gmail.com',
-          password: '1234'
-        }
-      });
-    const loginFormHandler = async (data) => {
-        setIsDisabled(true);
-        data.login = true;
-        let res = await fetch("api/v1/restaurant", {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-
-        res = await res.json();
-        if(res.success)
-        {
-            delete res.data.password;
+      } = useForm();
+    const finishLogin = (account) => {
             deleteCookie('user_auth');
             setUser(user_auth());
             deleteCookie('delivery_auth');
             setDelivery(delivery_auth());
-            setCookie('restaurant_auth', JSON.stringify(res.data));
+            setCookie('restaurant_auth', JSON.stringify(account));
             setAuth(restaurant_auth());
             router.push("/restaurant/dashboard");
             toast.success("Login Successfully");
+    };
+
+    const verifyLogin = async (code) => {
+        try {
+            const response = await fetch("/api/v1/authenticator/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ challenge, code }),
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                toast.error(result.message || "Authenticator verification failed.");
+                return false;
+            }
+            finishLogin(result.data);
+            return true;
+        } catch {
+            toast.error("Unable to reach the login service.");
+            return false;
         }
-        else{
+    };
+
+    const loginFormHandler = async (data) => {
+        setIsDisabled(true);
+        try {
+            data.login = true;
+            const response = await fetch("/api/v1/restaurant", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.requiresTwoFactor) {
+                setChallenge(result.challenge);
+                setIsDisabled(false);
+                return;
+            }
+            if (result.success) {
+                finishLogin(result.data);
+            } else {
+                toast.error("Invalid credentials.");
+                setIsDisabled(false);
+            }
+        } catch {
+            toast.error("Unable to reach the login service.");
             setIsDisabled(false);
-            toast.error("Invalid credentials.");
         }
-        
     }
     return (
-        <div align="center">
+        <div className="auth-page" align="center">
+            {challenge ? <AuthenticatorCode onVerify={verifyLogin} onCancel={() => setChallenge("")} /> : <>
             <h2 className="font-bold">Restaurant Login</h2>
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(loginFormHandler)}>
@@ -87,6 +115,7 @@ const Login = () => {
                     </div>
                 </form>
             </div>
+            </>}
         </div>
     )
 }

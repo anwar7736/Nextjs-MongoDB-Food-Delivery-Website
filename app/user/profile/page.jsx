@@ -8,6 +8,7 @@ import { useContext, useEffect, useState } from "react";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { toast } from "react-toastify";
 import { redirect } from "next/navigation";
+import AuthenticatorSettings from "@/app/_components/auth/AuthenticatorSettings";
 const Profile = () => {
     const {user, setUser} = useContext(UserAuthContext);
     const [isDisabled, setIsDisabled] = useState(false);
@@ -56,7 +57,8 @@ const Profile = () => {
     return (
         <div align="center">
             <title>User Profile</title>
-            <div className="w-full max-w-xs">
+            <AuthenticatorSettings accountType="user" account={auth} />
+            <div className="w-full max-w-2xl profile-form">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(profileFormHandler)}>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">

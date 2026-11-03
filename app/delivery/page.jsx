@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Login from "../_components/delivery_auth/Login";
 import SignUp from "../_components/delivery_auth/SignUp";
-import withDeliveryGuest from "../hoc/withDeliveryGuest";
 
 const Delivery = () => {
     const [login, setLogin] = useState(true);
@@ -25,4 +24,4 @@ const Delivery = () => {
   )
 }
 
-export default withDeliveryGuest(Delivery)
+export default Delivery

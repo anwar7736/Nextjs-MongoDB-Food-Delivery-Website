@@ -1,11 +1,12 @@
 import { mongoDB_connect } from "@/app/helpers/helper";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
-import { Result } from "postcss";
 
-mongoDB_connect();
+export const dynamic = "force-dynamic";
+
 export async function GET()
 {
+    await mongoDB_connect();
     let success = false;
     let data    = [];
         data = await restaurantSchema.distinct('city', {}, { collation: { locale: "en", strength: 2 } } );

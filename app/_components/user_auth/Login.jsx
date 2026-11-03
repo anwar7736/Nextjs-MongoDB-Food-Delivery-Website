@@ -9,40 +9,26 @@ import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 import { session, session_destroy } from "@/app/helpers/SessionHelper";
+import AuthenticatorCode from "../auth/AuthenticatorCode";
 const Login = () => {
     const {auth, setAuth} = useContext(AuthContext);
     const {user, setUser} = useContext(UserAuthContext);
     const {delivery, setDelivery} = useContext(DeliveryAuthContext);
     const [isDisabled, setIsDisabled] = useState(false);
+    const [challenge, setChallenge] = useState("");
     const router = useRouter();
     const {
         register,
         handleSubmit,
         watch,
         formState: { errors },
-      } = useForm({
-        defaultValues: {
-          phone: '01710000000',
-          password: '1234'
-        }
-      });
-    const loginFormHandler = async (data) => {
-        setIsDisabled(true);
-        data.login = true;
-        let res = await fetch("api/v1/user", {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-
-        res = await res.json();
-        if(res.success)
-        {
-            delete res.data.password;
+      } = useForm();
+    const finishLogin = (account) => {
             deleteCookie('delivery_auth');
             setDelivery(delivery_auth());
             deleteCookie('restaurant_auth');
             setAuth(restaurant_auth());
-            setCookie('user_auth', JSON.stringify(res.data));
+            setCookie('user_auth', JSON.stringify(account));
             setUser(user_auth());
             let redirectUrl = "/user/dashboard";
             let url = session('redirect_url');
@@ -53,15 +39,57 @@ const Login = () => {
             }
             router.push(redirectUrl);
             toast.success("Login Successfully");
+    };
+
+    const verifyLogin = async (code) => {
+        try {
+            const response = await fetch("/api/v1/authenticator/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ challenge, code }),
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                toast.error(result.message || "Authenticator verification failed.");
+                return false;
+            }
+            finishLogin(result.data);
+            return true;
+        } catch {
+            toast.error("Unable to reach the login service.");
+            return false;
         }
-        else{
+    };
+
+    const loginFormHandler = async (data) => {
+        setIsDisabled(true);
+        try {
+            data.login = true;
+            const response = await fetch("/api/v1/user", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.requiresTwoFactor) {
+                setChallenge(result.challenge);
+                setIsDisabled(false);
+                return;
+            }
+            if (result.success) {
+                finishLogin(result.data);
+            } else {
+                toast.error("Invalid credentials.");
+                setIsDisabled(false);
+            }
+        } catch {
+            toast.error("Unable to reach the login service.");
             setIsDisabled(false);
-            toast.error("Invalid credentials.");
         }
-        
     }
     return (
-        <div align="center">
+        <div className="auth-page" align="center">
+            {challenge ? <AuthenticatorCode onVerify={verifyLogin} onCancel={() => setChallenge("")} /> : <>
             <h2 className="font-bold">Login</h2>
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(loginFormHandler)}>
@@ -94,6 +122,7 @@ const Login = () => {
                     </div>
                 </form>
             </div>
+            </>}
         </div>
     )
 }
