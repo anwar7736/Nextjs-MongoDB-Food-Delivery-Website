@@ -1,7 +1,7 @@
 {
-  "name": "FoodDash - Local food, delivered",
-  "short_name": "FoodDash",
-  "description": "Discover local restaurants and order your favorite food.",
+  "name": "FoodFlow AI - Local food, delivered",
+  "short_name": "FoodFlow AI",
+  "description": "Chat for restaurant and food recommendations, then place your order right in the conversation.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
