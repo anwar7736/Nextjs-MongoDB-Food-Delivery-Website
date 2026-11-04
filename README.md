@@ -1,4 +1,4 @@
-# FoodDash
+# FoodFlow AI
 
 A Next.js food delivery app with customer, restaurant, and delivery-partner accounts.
 
