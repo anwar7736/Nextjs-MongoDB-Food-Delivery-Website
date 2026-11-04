@@ -7,6 +7,7 @@ import { session, session_destroy } from "../helpers/SessionHelper";
 import withUserAuth from "../hoc/withUserAuth";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import ImageWithFallback from "../_components/ImageWithFallback";
 
 const PlaceOrder = () => {
     const router = useRouter();
@@ -111,7 +112,7 @@ const PlaceOrder = () => {
                 {
                     cart.length > 0 ? cart.map((item) => (
                         <article className="cart-item-card" key={item._id}>
-                            <img src={item.image} alt={item.name} />
+                            <ImageWithFallback src={item.image} alt={item.name} />
                             <div className="cart-item-details">
                                 <h2>{item.name}</h2>
                                 <p>Tk {Number(item.price).toFixed(2)} each</p>

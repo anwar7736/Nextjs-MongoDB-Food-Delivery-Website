@@ -309,10 +309,9 @@ const EditOrder = () => {
                                             </td>
                                             <td data-label="Action">
                                                 {
-                                                    index != 0 && (<button type="button" className="bg-red-600 px-3 text-white rounded" onClick={() => removeRow(index)}>-</button>)
+                                                    index != 0 && (<button type="button" aria-label="Remove item" className="bg-red-600 px-3 text-white rounded" onClick={() => removeRow(index)}>-</button>)
                                                 }
-                                                &nbsp;
-                                                <button type="button" className="bg-green-600 px-3 text-white rounded" onClick={() => addMoreRow()}>+</button>
+                                                <button type="button" aria-label="Add item" className="bg-green-600 px-3 text-white rounded" onClick={() => addMoreRow()}>+</button>
                                             </td>
                                         </tr>
                                     ))

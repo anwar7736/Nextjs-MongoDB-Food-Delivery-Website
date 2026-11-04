@@ -4,6 +4,7 @@ import { session, session_destroy } from "@/app/helpers/SessionHelper";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import ImageWithFallback from "../../_components/ImageWithFallback";
 
 const Explore = () => {
   const params = useParams();
@@ -89,7 +90,7 @@ const Explore = () => {
           <div className="food-card-grid">
             {foodItems.map((item) => (
               <article className="food-card" key={item._id}>
-                <img src={item.image} alt={item.name} />
+                <ImageWithFallback src={item.image} alt={item.name} />
                 <div className="food-card-content">
                   <h2>{item.name}</h2>
                   <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>

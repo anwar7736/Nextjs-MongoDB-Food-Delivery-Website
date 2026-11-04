@@ -11,6 +11,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import ImageWithFallback from "../ImageWithFallback";
 
 const Header = () => {
   const { auth, setAuth } = useContext(AuthContext);
@@ -110,7 +111,7 @@ const Header = () => {
     <header className="site-header">
       <div className="site-header-inner">
         <Link className="site-brand" href="/" onClick={() => setMenuOpen(false)}>
-          <img src="/logo.png" alt="" />
+          <ImageWithFallback src="/logo.png" alt="" />
           <span>FoodFlow AI</span>
         </Link>
 

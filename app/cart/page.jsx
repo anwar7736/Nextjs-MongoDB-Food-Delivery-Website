@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { hasCookie } from "cookies-next";
 import { toast } from "react-toastify";
+import ImageWithFallback from "../_components/ImageWithFallback";
 
 const Cart = () => {
     const router = useRouter();
@@ -75,7 +76,7 @@ const Cart = () => {
                 {
                     cart.length > 0 ? cart.map((item) => (
                         <article className="cart-item-card" key={item._id}>
-                            <img src={item.image} alt={item.name} />
+                            <ImageWithFallback src={item.image} alt={item.name} />
                             <div className="cart-item-details">
                                 <h2>{item.name}</h2>
                                 <p>Tk {Number(item.price).toFixed(2)} each</p>

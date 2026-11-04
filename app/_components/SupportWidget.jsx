@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import ImageWithFallback from "./ImageWithFallback";
 
 const supportOptions = [
   {
@@ -124,7 +125,7 @@ export default function SupportWidget() {
         aria-expanded={isOpen}
         onClick={() => setIsOpen((open) => !open)}
       >
-        <img src="/support-avatar.svg" alt="" />
+        <ImageWithFallback src="/support.jpg" alt="" />
         <span className="support-online-indicator" aria-label="Available now" />
       </button>
     </div>

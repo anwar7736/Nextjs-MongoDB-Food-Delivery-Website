@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import ValidationError from "../../ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import FoodImageUpload from "./FoodImageUpload";
 const AddFood = (props) => {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -11,14 +11,8 @@ const AddFood = (props) => {
   const {
     register,
     handleSubmit,
-    watch,
-    trigger,
     formState: { errors },
   } = useForm();
-  const uploadedImageRef = useRef("");
-  const imageField = register("image", {
-    validate: (value) => uploadedImageRef.current || value?.trim() || "Upload a photo or provide an image URL."
-  });
 
   const submitFormHandler = async (data) => {
     if (isImageProcessing) {
@@ -29,7 +23,7 @@ const AddFood = (props) => {
     try {
       const restaurant = await restaurant_auth();
       data.restaurant_id = restaurant._id;
-      data.image = uploadedImage || data.image;
+      data.image = uploadedImage;
 
       const response = await fetch("/api/v1/restaurant/food", {
         method: "POST",
@@ -76,30 +70,11 @@ const AddFood = (props) => {
             <input className="food-form-control" id="price" type="number" min="0" step="0.01" inputMode="decimal" placeholder="0.00" {...register("price", { required: 'This field is required.', min: { value: 0, message: "Price cannot be negative." } })} />
             {errors.price && <ValidationError message={errors.price.message} />}
           </div>
-          <div className="food-form-field">
-            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">Image URL <span className="food-form-optional">(optional)</span></label>
-            <textarea
-              id="image"
-              className="food-form-control food-image-url"
-              placeholder="https://example.com/food.jpg"
-              {...imageField}
-              onChange={(event) => {
-                uploadedImageRef.current = "";
-                setUploadedImage("");
-                imageField.onChange(event);
-              }}
-            />
-            {errors.image && <ValidationError message={errors.image.message} />}
-          </div>
           <FoodImageUpload
-            image={uploadedImage || watch("image")}
+            image={uploadedImage}
             isProcessing={isImageProcessing}
             onProcessingChange={setIsImageProcessing}
-            onImageChange={(image) => {
-              uploadedImageRef.current = image;
-              setUploadedImage(image);
-              trigger("image");
-            }}
+            onImageChange={setUploadedImage}
           />
           <div className="food-form-actions">
             <button

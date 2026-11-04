@@ -1,6 +1,7 @@
 "use client";
 
 import { toast } from "react-toastify";
+import ImageWithFallback from "../../ImageWithFallback";
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const MAX_STORED_IMAGE_LENGTH = 600_000;
@@ -80,7 +81,7 @@ export default function FoodImageUpload({ image, onImageChange, isProcessing, on
   return (
     <div className="food-image-upload">
       <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="food-image-file">
-        Upload a photo <span>(max 8 MB; optimized automatically)</span>
+        Upload a photo <span>(optional; max 8 MB, optimized automatically)</span>
       </label>
       <input
         id="food-image-file"
@@ -91,12 +92,10 @@ export default function FoodImageUpload({ image, onImageChange, isProcessing, on
         disabled={isProcessing}
       />
       {isProcessing && <p className="food-image-status" role="status">Optimizing photo…</p>}
-      {image && (
-        <div className="food-image-preview-wrap">
-          <img className="food-image-preview" src={image} alt="Food item preview" />
-          <p>Photo ready to save</p>
-        </div>
-      )}
+      <div className="food-image-preview-wrap">
+        <ImageWithFallback className="food-image-preview" src={image} alt="Food item preview" />
+        <p>{image ? "Photo ready to save" : "No photo selected; adding a photo is optional."}</p>
+      </div>
     </div>
   );
 }

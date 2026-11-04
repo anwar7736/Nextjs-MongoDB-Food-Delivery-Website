@@ -3,27 +3,21 @@ import { useForm } from "react-hook-form";
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from "react-toastify";
 import ValidationError from "@/app/_components/ValidationError";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import withAuth from "@/app/hoc/withAuth";
 import FoodImageUpload from "@/app/_components/restaurant/food/FoodImageUpload";
 const EditFood = () => {
   const params = useParams();
   const {
     handleSubmit,
-    watch,
     setValue,
     register,
-    trigger,
     formState: { errors },
   } = useForm();
   const router = useRouter();
   const [isDisabled, setIsDisabled] = useState(false);
   const [isImageProcessing, setIsImageProcessing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState("");
-  const uploadedImageRef = useRef("");
-  const imageField = register("image", {
-    validate: (value) => uploadedImageRef.current || value?.trim() || "Upload a photo or provide an image URL."
-  });
   const [isLoading, setIsLoading] = useState(true);
   const _id = params.id;
   const getFoodItem = async () => {
@@ -36,13 +30,7 @@ const EditFood = () => {
       }
       setValue("name", result.data.name);
       setValue("price", result.data.price);
-      if (result.data.image?.startsWith("data:image/")) {
-        uploadedImageRef.current = result.data.image;
-        setUploadedImage(result.data.image);
-        setValue("image", "");
-      } else {
-        setValue("image", result.data.image || "");
-      }
+      setUploadedImage(result.data.image || "");
     } catch (error) {
       console.error("Food item loading failed:", error);
       toast.error("Unable to load this food item.");
@@ -61,7 +49,7 @@ const EditFood = () => {
     }
     setIsDisabled(true);
     try {
-      data.image = uploadedImage || data.image;
+      data.image = uploadedImage;
       const response = await fetch(`/api/v1/restaurant/food/${_id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -106,30 +94,11 @@ const EditFood = () => {
             <input className="food-form-control" id="price" type="number" min="0" step="0.01" inputMode="decimal" placeholder="0.00" {...register("price", { required: 'This field is required.', min: { value: 0, message: "Price cannot be negative." } })} />
             {errors.price && <ValidationError message={errors.price.message} />}
           </div>
-          <div className="food-form-field">
-            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">Image URL <span className="food-form-optional">(optional)</span></label>
-            <textarea
-              id="image"
-              className="food-form-control food-image-url"
-              placeholder="https://example.com/food.jpg"
-              {...imageField}
-              onChange={(event) => {
-                uploadedImageRef.current = "";
-                setUploadedImage("");
-                imageField.onChange(event);
-              }}
-            />
-            {errors.image && <ValidationError message={errors.image.message} />}
-          </div>
           <FoodImageUpload
-            image={uploadedImage || watch("image")}
+            image={uploadedImage}
             isProcessing={isImageProcessing}
             onProcessingChange={setIsImageProcessing}
-            onImageChange={(image) => {
-              uploadedImageRef.current = image;
-              setUploadedImage(image);
-              trigger("image");
-            }}
+            onImageChange={setUploadedImage}
           />
           <div className="food-form-actions">
             <button

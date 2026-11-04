@@ -42,17 +42,22 @@ export async function PUT(request, { params })
     if (typeof payload.name !== "string" ||
         !Number.isFinite(Number(payload.price)) ||
         Number(payload.price) < 0 ||
-        typeof payload.image !== "string" ||
-        payload.image.trim().length > 600_000) {
+        (payload.image != null && typeof payload.image !== "string") ||
+        (typeof payload.image === "string" && payload.image.trim().length > 600_000)) {
         return NextResponse.json({ success: false, message: "Invalid food item details." }, { status: 400 });
     }
-    const data = await foodSchema.findOneAndUpdate({ _id: id, restaurant_id: session.id }, {
-        $set: {
-            name: payload.name.trim(),
-            price: Number(payload.price),
-            image: payload.image.trim(),
-        },
-    }, { new: true });
+    const updates = {
+        name: payload.name.trim(),
+        price: Number(payload.price),
+    };
+    if (typeof payload.image === "string") {
+        updates.image = payload.image.trim();
+    }
+    const data = await foodSchema.findOneAndUpdate(
+        { _id: id, restaurant_id: session.id },
+        { $set: updates },
+        { new: true }
+    );
 
     return NextResponse.json({ success: true, data, message: "Food item updated." });
 }

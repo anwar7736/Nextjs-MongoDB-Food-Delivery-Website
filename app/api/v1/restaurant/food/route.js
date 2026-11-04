@@ -40,15 +40,15 @@ export async function POST(request)
         typeof payload.name !== "string" ||
         !Number.isFinite(Number(payload.price)) ||
         Number(payload.price) < 0 ||
-        typeof payload.image !== "string" ||
-        payload.image.trim().length > 600_000) {
+        (payload.image != null && typeof payload.image !== "string") ||
+        (typeof payload.image === "string" && payload.image.trim().length > 600_000)) {
         return NextResponse.json({ success: false, message: "Invalid food item details." }, { status: 400 });
     }
 
     data = await foodSchema({
         name: payload.name.trim(),
         price: Number(payload.price),
-        image: payload.image.trim(),
+        image: typeof payload.image === "string" ? payload.image.trim() : "",
         restaurant_id: session.id,
     });
     data = await data.save();

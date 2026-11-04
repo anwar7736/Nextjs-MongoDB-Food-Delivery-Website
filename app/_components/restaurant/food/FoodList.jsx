@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import ImageWithFallback from "../../ImageWithFallback";
 const FoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
@@ -87,7 +88,7 @@ const FoodList = () => {
               foodItems.map((item) => (
                 <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={item?._id}>
                   <td scope="row" className="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    <img className="w-10 h-10 rounded-full" src={item?.image} alt={item?.name} />
+                    <ImageWithFallback className="w-10 h-10 rounded-full" src={item?.image} alt={item?.name} />
                   </td>
                   <td className="px-6 py-4">
                     {item?.name}
@@ -116,7 +117,7 @@ const FoodList = () => {
           <p className="dashboard-empty-card">No food items yet. Add your first menu item.</p>
         ) : foodItems.map((item) => (
           <article className="food-dashboard-card" key={item._id}>
-            <img src={item.image} alt={item.name} />
+            <ImageWithFallback src={item.image} alt={item.name} />
             <div className="food-dashboard-card-details">
               <h5>{item.name}</h5>
               <p>Tk {Number(item.price).toFixed(2)}</p>

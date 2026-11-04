@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { setCookie } from "cookies-next";
 import { toast } from "react-toastify";
+import ImageWithFallback from "../ImageWithFallback";
 
 export default function AuthenticatorSettings({ accountType, account }) {
   const [isEnabled, setIsEnabled] = useState(Boolean(account?.twoFactorEnabled));
@@ -105,7 +106,7 @@ export default function AuthenticatorSettings({ accountType, account }) {
 
       {!isEnabled && qrCode && (
         <div className="security-enrollment">
-          <img className="authenticator-qr" src={qrCode} alt="QR code for your authenticator app" />
+          <ImageWithFallback className="authenticator-qr" src={qrCode} alt="QR code for your authenticator app" />
           <div className="security-enrollment-copy">
             <p>Scan this QR code with your authenticator app, then enter the six-digit code it displays.</p>
             <label className="form-label" htmlFor="authenticator-setup-key">Setup key</label>
