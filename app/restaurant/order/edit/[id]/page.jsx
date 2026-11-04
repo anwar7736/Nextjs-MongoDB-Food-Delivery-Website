@@ -155,10 +155,16 @@ const EditOrder = () => {
     }
 
     const getAllOrderStatuses = async () => {
-        let res = await fetch("/api/v1/order/statuses");
-        res = await res.json();
-        if (res.success) {
-            setStatuses(res.data);
+        try {
+            const response = await fetch("/api/v1/order/statuses");
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || "Unable to load order statuses.");
+            }
+            setStatuses(result.data || []);
+        } catch (error) {
+            console.error("Order status loading failed:", error);
+            toast.error(error.message || "Unable to load order statuses.");
         }
     }
 
@@ -188,9 +194,13 @@ const EditOrder = () => {
                 final_total: Number(currentOrder.final_total) || 0,
             });
             reset({
-                user_id: currentOrder.user?._id || "",
-                delivery_partner_id: currentOrder.delivery?._id || "",
-                status_id: currentOrder.status?._id || "",
+                user_id: currentOrder.user?._id ? String(currentOrder.user._id) : "",
+                delivery_partner_id: currentOrder.delivery?._id ? String(currentOrder.delivery._id) : "",
+                status_id: currentOrder.status?._id
+                    ? String(currentOrder.status._id)
+                    : currentOrder.status_id
+                        ? String(currentOrder.status_id)
+                        : "",
             });
         } catch (error) {
             console.error("Order loading failed:", error);
@@ -271,7 +281,7 @@ const EditOrder = () => {
                                 {
                                     rows.map((row, index) => (
                                         <tr key={`${row.id || "new"}-${index}`}>
-                                            <td>
+                                            <td data-label="Item">
                                                 <select name="item_id[]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id} onChange={(e) => itemChange(index, e.target.value)}>
                                                     <option value="">Select Any Item</option>
                                                     {
@@ -281,23 +291,23 @@ const EditOrder = () => {
                                                     }
                                                 </select>
                                             </td>
-                                            <td>
+                                            <td data-label="Quantity">
                                                 <input type="number" name="quantity[]" min="1" max="99" value={row.quantity}
                                                     onChange={(e) => qtyChange(index, e.target.value)}
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
-                                            <td>
+                                            <td data-label="Price">
                                                 <input type="number" name="price[]" min="0" value={row.price}
                                                     onChange={(e) => priceChange(index, e.target.value)}
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
-                                            <td>
+                                            <td data-label="Sub Total">
                                                 <input type="number" name="total[]"
                                                     value={row.quantity * row.price} readOnly
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-
                                                 bg-gray-200 leading-tight focus:outline-none focus:shadow-outline mb-1"/>
                                             </td>
-                                            <td>
+                                            <td data-label="Action">
                                                 {
                                                     index != 0 && (<button type="button" className="bg-red-600 px-3 text-white rounded" onClick={() => removeRow(index)}>-</button>)
                                                 }

@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { deliverySchema } from "@/app/models/deliveryModel";
 import { orderStatusLogSchema } from "@/app/models/orderStatusLogModel";
+import { DEFAULT_ORDER_STATUS_ID } from "@/app/models/orderStatusModel";
 import { userSchema } from "@/app/models/userModel";
 import { foodSchema } from "@/app/models/foodModel";
 import { verifyAuthSession } from "@/app/lib/session";
@@ -89,7 +90,7 @@ export async function POST(request)
     }
     const statusId = isRestaurantOrder && mongoose.isValidObjectId(payload.status_id)
         ? payload.status_id
-        : "674436ad7f3f886666bb47a7";
+        : DEFAULT_ORDER_STATUS_ID;
     const order = await new orderSchema({
         user_id: customer._id,
         restaurant_id: restaurant._id,

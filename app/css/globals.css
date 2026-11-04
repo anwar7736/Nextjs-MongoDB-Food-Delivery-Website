@@ -1807,9 +1807,75 @@ input.onlyNumber {
     padding: 8px;
   }
 
+  .order-items-scroll {
+    overflow: visible;
+  }
+
+  .order-editor-table {
+    display: block;
+    min-width: 0;
+  }
+
+  .order-editor-table thead {
+    display: none;
+  }
+
+  .order-editor-table tbody {
+    display: grid;
+    gap: 12px;
+  }
+
+  .order-editor-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+
+  .order-editor-table tbody td {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 4px;
+    padding: 0;
+  }
+
+  .order-editor-table tbody td::before {
+    color: #34483a;
+    font-size: 0.78rem;
+    font-weight: 700;
+    content: attr(data-label);
+  }
+
+  .order-editor-table tbody td:first-child,
+  .order-editor-table tbody td:last-child {
+    grid-column: 1 / -1;
+  }
+
   .order-editor-table input,
   .order-editor-table select {
-    max-width: 150px;
+    width: 100%;
+    max-width: none;
+  }
+
+  .order-editor-table tfoot {
+    display: block;
+    margin-top: 12px;
+  }
+
+  .order-editor-table tfoot tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(110px, 42%);
+    align-items: center;
+  }
+
+  .order-editor-table tfoot th,
+  .order-editor-table tfoot td {
+    padding: 6px 4px;
+    text-align: left;
   }
 
   .food-form-card {

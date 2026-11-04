@@ -73,7 +73,7 @@ export async function GET(request, { params }) {
         as: "status"
       }
     },
-    { $unwind: "$status" },
+    { $unwind: { path: "$status", preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
         from: "order_items",
@@ -91,7 +91,7 @@ export async function GET(request, { params }) {
         as: "order_details.food"
       }
     },
-    { $unwind: "$order_details.food" },
+    { $unwind: { path: "$order_details.food", preserveNullAndEmptyArrays: true } },
     {
       $group: {
         _id: "$_id",
@@ -100,14 +100,15 @@ export async function GET(request, { params }) {
         total: { $first: "$total" },
         shipping_charge: { $first: "$shipping_charge" },
         final_total: { $first: "$final_total" },
+        status_id: { $first: "$status_id" },
         restaurant: { $first: "$restaurant" },
         user: { $first: "$user" },
         delivery: { $first: "$delivery" },
         status: { $first: "$status" },
         order_details: {
           $push: {
-            id: "$order_details.food._id",
-            name: "$order_details.food.name",
+            id: { $ifNull: ["$order_details.food._id", "$order_details.food_id"] },
+            name: { $ifNull: ["$order_details.food.name", "Food item unavailable"] },
             quantity: "$order_details.quantity",
             price: "$order_details.price",
             total: "$order_details.total",
@@ -123,6 +124,7 @@ export async function GET(request, { params }) {
         total: 1,
         shipping_charge: 1,
         final_total: 1,
+        status_id: 1,
         restaurant: { name: 1, phone: 1, address: 1 },
         user: {_id: 1, name: 1, phone: 1, address: 1 },
         delivery: {_id: 1, name: 1, phone: 1, address: 1 },
