@@ -78,7 +78,7 @@ const Cart = () => {
                             <img src={item.image} alt={item.name} />
                             <div className="cart-item-details">
                                 <h2>{item.name}</h2>
-                                <p>${Number(item.price).toFixed(2)} each</p>
+                                <p>Tk {Number(item.price).toFixed(2)} each</p>
                                 <div className="cart-quantity">
                                     <button aria-label={`Decrease ${item.name} quantity`} onClick={() => decreaseQty(item)}>-</button>
                                     <input type="number" min="1" max="99" value={item.quantity} aria-label={`${item.name} quantity`} className="onlyNumber" onChange={(e) => quantityChange(item, e.target.value)}/>
@@ -86,7 +86,7 @@ const Cart = () => {
                                 </div>
                                 <button className="remove_button" onClick={() => removeFromCart(item._id)}>Remove</button>
                             </div>
-                            <strong className="cart-item-total">${(item.price * item.quantity).toFixed(2)}</strong>
+                            <strong className="cart-item-total">Tk {(item.price * item.quantity).toFixed(2)}</strong>
                         </article>
                     ))
                         : (<h1 className="text-center text-red-600">Your cart is empty!</h1>)
@@ -96,7 +96,7 @@ const Cart = () => {
                     <div>
                         <div align="left" className="mt-5 ml-3">
                             <p><b>Total Items:</b> {cart.reduce((total, item) => total + item.quantity, 0)}</p>
-                            <p><b>Sub Total:</b> ${subTotal.toFixed(2)}</p>
+                            <p><b>Sub Total:</b> Tk {subTotal.toFixed(2)}</p>
                         </div>
                         <div align="left" className="mt-5 ml-3">
                             <button onClick={() => orderNow()} className="order-now-btn">Order Now</button>

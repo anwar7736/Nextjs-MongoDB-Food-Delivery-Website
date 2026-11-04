@@ -24,19 +24,18 @@ const PlaceOrder = () => {
 
     const submitFormHandler = async (data) => {
         setIsDisabled(true);
-        const restaurant = await restaurant_auth();
-        data.restaurant_id = restaurant._id;
-        data.total = summary.total;
-        data.shipping_charge = summary.shipping_charge;
-        data.final_total = summary.final_total;
-        data.items = rows.filter(row => row.id !== '' && Number.isInteger(row.quantity) && row.quantity > 0 && row.quantity <= 99 &&
-            Number.isFinite(row.price) && row.price >= 0);
-        if (data.items.length == 0) {
-            setIsDisabled(false);
-            toast.error('Please choose atleast one item!');
-            return;
-        }
         try {
+            const restaurant = await restaurant_auth();
+            data.restaurant_id = restaurant._id;
+            data.total = summary.total;
+            data.shipping_charge = summary.shipping_charge;
+            data.final_total = summary.final_total;
+            data.items = rows.filter(row => row.id !== '' && Number.isInteger(row.quantity) && row.quantity > 0 && row.quantity <= 99 &&
+                Number.isFinite(row.price) && row.price >= 0);
+            if (data.items.length === 0) {
+                toast.error('Please choose at least one item!');
+                return;
+            }
             const response = await fetch("/api/v1/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -182,12 +181,12 @@ const PlaceOrder = () => {
     }, []);
 
     return (
-        <div align="center">
+        <main className="order-editor">
             <h2 className="font-bold mt-4">Place New Order</h2>
             <div className="w-full">
-                <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(submitFormHandler)}>
-                    <div className="mb-4 flex justify-space-between">
-                        <div className="ml-3">
+                <form className="order-editor-card" onSubmit={handleSubmit(submitFormHandler)}>
+                    <div className="order-editor-fields">
+                        <div className="order-editor-field">
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                                 Customer
                             </label>
@@ -201,12 +200,12 @@ const PlaceOrder = () => {
                             </select>
                             {errors.user_id && <ValidationError message={errors.user_id.message} />}
                         </div>
-                        <div className="ml-3">
+                        <div className="order-editor-field">
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                                 Delivery Partner
                             </label>
-                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="delivery_partner_id" {...register("delivery_partner_id", { required: 'This field is required.' })} >
-                                <option disabled value="">Select Any Delivery Partner</option>
+                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="delivery_partner_id" {...register("delivery_partner_id")} >
+                                <option value="">Assign later (optional)</option>
                                 {
                                     deliveries.map(delivery => (
                                         <option key={delivery._id} value={delivery._id}>{delivery.name}</option>
@@ -215,7 +214,7 @@ const PlaceOrder = () => {
                             </select>
                             {errors.delivery_partner_id && <ValidationError message={errors.delivery_partner_id.message} />}
                         </div>
-                        <div className="ml-3">
+                        <div className="order-editor-field">
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                                 Order Status
                             </label>
@@ -230,10 +229,10 @@ const PlaceOrder = () => {
                             {errors.status_id && <ValidationError message={errors.status_id.message} />}
                         </div>
                     </div>
-                    <div>
-                        <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                    <div className="order-items-scroll">
+                        <table className="order-editor-table w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <tr key={`${row.id || "new"}-${index}`}>
+                                <tr>
                                     <th scope="col" className="px-6 py-3">Item</th>
                                     <th scope="col" className="px-6 py-3">Quantity</th>
                                     <th scope="col" className="px-6 py-3">Price</th>
@@ -244,7 +243,7 @@ const PlaceOrder = () => {
                             <tbody>
                                 {
                                     rows.map((row, index) => (
-                                        <tr>
+                                        <tr key={`${row.id || "new"}-${index}`}>
                                             <td>
                                                 <select name="item_id[]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id} onChange={(e) => itemChange(index, e.target.value)}>
                                                     <option value="">Select Any Item</option>
@@ -256,12 +255,12 @@ const PlaceOrder = () => {
                                                 </select>
                                             </td>
                                             <td>
-                                                <input type="number" name="quantity[]" value={row.quantity}
+                                                <input type="number" name="quantity[]" min="1" max="99" value={row.quantity}
                                                     onChange={(e) => qtyChange(index, e.target.value)}
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
                                             <td>
-                                                <input type="number" name="price[]" value={row.price}
+                                                <input type="number" name="price[]" min="0" value={row.price}
                                                     onChange={(e) => priceChange(index, e.target.value)}
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
@@ -282,7 +281,6 @@ const PlaceOrder = () => {
                                     ))
                                 }
                             </tbody>
-                            <br />
                             <tfoot className="mt-5 mb-5">
                                 <tr>
                                     <th>
@@ -328,7 +326,7 @@ const PlaceOrder = () => {
                     </div>
                 </form>
             </div>
-        </div>
+        </main>
     )
 }
 

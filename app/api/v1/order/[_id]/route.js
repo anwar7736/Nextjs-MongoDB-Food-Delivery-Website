@@ -117,7 +117,7 @@ export async function GET(request, { params }) {
     },
     {
       $project: {
-        id_: 1,
+        _id: 1,
         date: 1,
         invoice_no: 1,
         total: 1,
@@ -158,7 +158,7 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "Order not found." }, { status: 404 });
     }
     if (!mongoose.Types.ObjectId.isValid(payload.user_id) ||
-        !mongoose.Types.ObjectId.isValid(payload.delivery_partner_id) ||
+        (payload.delivery_partner_id && !mongoose.Types.ObjectId.isValid(payload.delivery_partner_id)) ||
         !Array.isArray(payload.items) || payload.items.length === 0 ||
         !Number.isFinite(Number(payload.shipping_charge)) || Number(payload.shipping_charge) < 0 ||
         payload.items.some((item) => !mongoose.Types.ObjectId.isValid(item.id) ||
@@ -167,12 +167,15 @@ export async function PUT(request, { params }) {
       return NextResponse.json({ success: false, message: "Invalid order details." }, { status: 400 });
     }
 
+    const restaurant = await restaurantSchema.findById(session.id);
     const [customer, deliveryPartner, foods] = await Promise.all([
       userSchema.findById(payload.user_id),
-      deliverySchema.findOne({ _id: payload.delivery_partner_id, city: (await restaurantSchema.findById(session.id))?.city }),
+      payload.delivery_partner_id
+        ? deliverySchema.findOne({ _id: payload.delivery_partner_id, city: restaurant?.city })
+        : Promise.resolve(null),
       foodSchema.find({ _id: { $in: payload.items.map((item) => item.id) }, restaurant_id: session.id }),
     ]);
-    if (!customer || !deliveryPartner || foods.length !== payload.items.length) {
+    if (!customer || (payload.delivery_partner_id && !deliveryPartner) || foods.length !== payload.items.length) {
       return NextResponse.json({ success: false, message: "Customer, delivery partner, or food item is invalid." }, { status: 400 });
     }
 
@@ -187,7 +190,7 @@ export async function PUT(request, { params }) {
     const shippingCharge = Number(payload.shipping_charge);
     const orderInput = {
       user_id: customer._id,
-      delivery_partner_id: deliveryPartner._id,
+      delivery_partner_id: deliveryPartner?._id ?? null,
       total,
       shipping_charge: shippingCharge,
       final_total: total + shippingCharge,

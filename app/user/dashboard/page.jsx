@@ -134,7 +134,7 @@ const Dashboard = () => {
         </div>
         <div className="order-dashboard-cards sm:hidden">
           {orders.length === 0 ? (
-            <p className="rounded-xl bg-white p-5 text-center text-gray-500">No orders yet.</p>
+            <p className="dashboard-empty-card">No orders yet.</p>
           ) : orders.map((order) => (
             <article className="order-dashboard-card" key={order._id}>
               <div className="order-dashboard-card-heading">
@@ -147,7 +147,7 @@ const Dashboard = () => {
               <div className="order-dashboard-card-details">
                 <p><strong>Restaurant</strong>{order.restaurant?.[0]?.name || "—"} · {order.restaurant?.[0]?.phone || "—"}</p>
                 <p><strong>Delivery</strong>{order.delivery?.[0]?.name || "Unassigned"} · {order.delivery?.[0]?.phone || "—"}</p>
-                <p><strong>Total</strong>${Number(order.final_total ?? order.total ?? 0).toFixed(2)}</p>
+                <p><strong>Total</strong>Tk {Number(order.final_total ?? order.total ?? 0).toFixed(2)}</p>
               </div>
               <div className="order-dashboard-card-actions">
                 <button disabled={isDisabled} onClick={() => showInvoice(order._id)}>View order</button>

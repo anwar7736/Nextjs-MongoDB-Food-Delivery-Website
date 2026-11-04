@@ -11,6 +11,7 @@ const AddFood = (props) => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm();
 
@@ -46,7 +47,7 @@ const AddFood = (props) => {
     <div align="center">
       <h2 className="font-bold">Add New Food Item</h2>
       <div className="w-full max-w-xs">
-        <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(submitFormHandler)}>
+        <form className="food-form-card" onSubmit={handleSubmit(submitFormHandler)}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
               Name
@@ -71,11 +72,17 @@ const AddFood = (props) => {
               Image Link
             </label>
             <textarea name="image" id="image" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" placeholder="Paste an image URL (optional if you upload)" {...register("image", {
-              validate: (value) => uploadedImage || value?.trim() || "Upload a photo or provide an image URL."
+              validate: (value) => value?.trim() || "Upload a photo or provide an image URL."
             })}></textarea>
             {errors.image && <ValidationError message={errors.image.message} />}
           </div>
-          <FoodImageUpload image={uploadedImage || watch("image")} onImageChange={setUploadedImage} />
+          <FoodImageUpload
+            image={uploadedImage || watch("image")}
+            onImageChange={(image) => {
+              setUploadedImage(image);
+              setValue("image", image, { shouldDirty: true, shouldValidate: true });
+            }}
+          />
           <div className="flex items-center justify-between">
             <button
               disabled={isDisabled}

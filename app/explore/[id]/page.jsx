@@ -92,7 +92,7 @@ const Explore = () => {
                 <img src={item.image} alt={item.name} />
                 <div className="food-card-content">
                   <h2>{item.name}</h2>
-                  <p className="food-card-price">${Number(item.price).toFixed(2)}</p>
+                  <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>
                   {item.description && <p className="description">{item.description}</p>}
                   <button disabled={isDisabled}
                     className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''}`}

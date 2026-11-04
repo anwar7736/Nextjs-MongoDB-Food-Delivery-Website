@@ -10,7 +10,78 @@
   --brand: #15803d;
   --brand-dark: #166534;
   --border: #e2e8e3;
+  --card-surface: #f1f7f1;
   --card-shadow: 0 16px 42px rgba(29, 55, 37, 0.08);
+}
+
+.order-editor {
+  width: min(100% - 32px, 1120px);
+  margin: 0 auto 36px;
+}
+
+.order-editor > h2 {
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.order-editor-card {
+  width: 100%;
+  padding: clamp(16px, 3vw, 32px);
+  margin-bottom: 24px;
+  background: var(--card-surface);
+  border: 1px solid #dce9dc;
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.order-editor-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.order-editor-field {
+  min-width: 0;
+}
+
+.order-editor-field select {
+  min-height: 44px;
+}
+
+.order-items-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.order-editor-table {
+  min-width: 720px;
+}
+
+.food-form-card {
+  width: 100%;
+  padding: clamp(20px, 5vw, 32px);
+  margin-bottom: 24px;
+  text-align: left;
+  background: var(--card-surface);
+  border: 1px solid #dce9dc;
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+}
+
+.dashboard-empty-card {
+  padding: 20px;
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  background: var(--card-surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.invoice-card {
+  background: var(--card-surface);
 }
 
 .food-card-grid {
@@ -22,7 +93,7 @@
 .food-card {
   overflow: hidden;
   color: #24352a;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid #e8eee9;
   border-radius: 20px;
   box-shadow: 0 12px 32px rgba(29, 55, 37, 0.08);
@@ -87,7 +158,7 @@
   min-width: 0;
   gap: 14px;
   padding: 14px;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid var(--border);
   border-radius: 16px;
   box-shadow: 0 8px 22px rgba(29, 55, 37, 0.07);
@@ -197,7 +268,7 @@
   padding: 18px;
   margin-bottom: 16px;
   color: #24352a;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid #e8eee9;
   border-radius: 18px;
   box-shadow: 0 10px 28px rgba(29, 55, 37, 0.07);
@@ -1025,7 +1096,7 @@ a {
   padding: 24px;
   color: #6a796f;
   text-align: center;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px dashed #dbe5dd;
   border-radius: 18px;
 }
@@ -1085,7 +1156,7 @@ a {
   padding: 24px;
   color: inherit;
   text-decoration: none;
-  background: #fff !important;
+  background: var(--card-surface) !important;
   border: 1px solid var(--border) !important;
   border-radius: 18px !important;
   box-shadow: 0 8px 24px rgba(29, 55, 37, 0.045) !important;
@@ -1296,7 +1367,7 @@ a {
   width: 100%;
   padding: clamp(20px, 5vw, 36px);
   text-align: left;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--card-shadow);
@@ -1355,7 +1426,7 @@ a {
 .auth-card {
   padding: clamp(24px, 6vw, 42px);
   text-align: left;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid var(--border);
   border-radius: 22px;
   box-shadow: var(--card-shadow);
@@ -1435,7 +1506,7 @@ a {
   margin: 0 auto 22px;
   padding: clamp(20px, 4vw, 30px);
   text-align: left;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid var(--border);
   border-radius: 20px;
   box-shadow: var(--card-shadow);
@@ -1616,7 +1687,7 @@ a {
   padding: 24px;
   margin: 20px;
   text-align: center;
-  background: #fff;
+  background: var(--card-surface);
   border: 1px solid var(--border);
   border-radius: 18px;
 }
@@ -1717,6 +1788,35 @@ input.onlyNumber {
 }
 
 @media (max-width: 640px) {
+  .order-editor {
+    width: calc(100% - 24px);
+  }
+
+  .order-editor-card {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .order-editor-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .order-editor-table th,
+  .order-editor-table td {
+    padding: 8px;
+  }
+
+  .order-editor-table input,
+  .order-editor-table select {
+    max-width: 150px;
+  }
+
+  .food-form-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
   .food-card-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 16px;

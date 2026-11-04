@@ -93,7 +93,7 @@ const FoodList = () => {
                     {item?.name}
                   </td>
                   <td className="px-6 py-4">
-                    ${item?.price}
+                    Tk {item?.price}
                   </td>
                   <td className="px-6 py-4 flex" >
                     <Link href={`/restaurant/edit_food/${item?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
@@ -113,13 +113,13 @@ const FoodList = () => {
       </div>
       <div className="food-dashboard-cards sm:hidden">
         {foodItems.length === 0 ? (
-          <p className="rounded-xl bg-white p-5 text-center text-gray-500">No food items yet. Add your first menu item.</p>
+          <p className="dashboard-empty-card">No food items yet. Add your first menu item.</p>
         ) : foodItems.map((item) => (
           <article className="food-dashboard-card" key={item._id}>
             <img src={item.image} alt={item.name} />
             <div className="food-dashboard-card-details">
               <h5>{item.name}</h5>
-              <p>${Number(item.price).toFixed(2)}</p>
+              <p>Tk {Number(item.price).toFixed(2)}</p>
               <div className="food-dashboard-card-actions">
                 <Link href={`/restaurant/edit_food/${item._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
                 <button

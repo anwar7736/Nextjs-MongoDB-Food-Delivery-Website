@@ -177,7 +177,7 @@ export async function GET(request)
         },
         {
           $project: {
-            id_: 1,
+            _id: 1,
             date:1,
             invoice_no: 1,
             total: 1,
