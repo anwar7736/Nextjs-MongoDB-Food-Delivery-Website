@@ -18,6 +18,7 @@ const EditFood = () => {
   } = useForm();
   const router = useRouter();
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isImageProcessing, setIsImageProcessing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState("");
   const uploadedImageRef = useRef("");
   const imageField = register("image", {
@@ -54,6 +55,10 @@ const EditFood = () => {
   }, [_id]);
 
   const submitFormHandler = async (data) => {
+    if (isImageProcessing) {
+      toast.info("Wait for the photo to finish optimizing.");
+      return;
+    }
     setIsDisabled(true);
     try {
       data.image = uploadedImage || data.image;
@@ -78,15 +83,15 @@ const EditFood = () => {
   }
 
   return (
-    <div align="center">
-      <h2 className="font-bold">Edit Food Item</h2>
-      <div className="w-full max-w-xs">
+    <main className="food-editor">
+      <h2>Edit Food Item</h2>
+      <div className="food-editor-content">
         <form className="food-form-card" onSubmit={handleSubmit(submitFormHandler)}>
-          <div className="mb-4">
+          <div className="food-form-field">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
               Name
             </label>
-            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="name" type="text" placeholder="Name" {...register("name", {
+            <input className="food-form-control" id="name" type="text" placeholder="e.g. Chicken Burger" {...register("name", {
               required: 'This field is required.', minLength: {
                 value: 3,
                 message: "This should be atleast 3 characters."
@@ -94,21 +99,19 @@ const EditFood = () => {
             })} />
             {errors.name && <ValidationError message={errors.name.message} />}
           </div>
-          <div className="mb-4">
+          <div className="food-form-field">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="price">
               Price
             </label>
-            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="price" type="number" placeholder="Price" {...register("price", { required: 'This field is required.' })} />
+            <input className="food-form-control" id="price" type="number" min="0" step="0.01" inputMode="decimal" placeholder="0.00" {...register("price", { required: 'This field is required.', min: { value: 0, message: "Price cannot be negative." } })} />
             {errors.price && <ValidationError message={errors.price.message} />}
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">
-              Image Link
-            </label>
+          <div className="food-form-field">
+            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">Image URL <span className="food-form-optional">(optional)</span></label>
             <textarea
               id="image"
-              className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1"
-              placeholder="Paste an image URL (optional if you upload)"
+              className="food-form-control food-image-url"
+              placeholder="https://example.com/food.jpg"
               {...imageField}
               onChange={(event) => {
                 uploadedImageRef.current = "";
@@ -120,24 +123,26 @@ const EditFood = () => {
           </div>
           <FoodImageUpload
             image={uploadedImage || watch("image")}
+            isProcessing={isImageProcessing}
+            onProcessingChange={setIsImageProcessing}
             onImageChange={(image) => {
               uploadedImageRef.current = image;
               setUploadedImage(image);
               trigger("image");
             }}
           />
-          <div className="flex items-center justify-between">
+          <div className="food-form-actions">
             <button
-              disabled={isDisabled}
+              disabled={isDisabled || isImageProcessing || isLoading}
               className={`bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
                 }`}
               type="submit">
-              {isLoading ? "Loading…" : "Update"}
+              {isLoading ? "Loading…" : isDisabled ? "Saving…" : "Save changes"}
             </button>
           </div>
         </form>
       </div>
-    </div>
+    </main>
   )
 }
 

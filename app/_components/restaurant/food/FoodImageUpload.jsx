@@ -4,8 +4,10 @@ import { toast } from "react-toastify";
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const MAX_STORED_IMAGE_LENGTH = 600_000;
+const IMAGE_DIMENSIONS = [1200, 1000, 800, 640, 480];
+const IMAGE_QUALITIES = [0.78, 0.66, 0.54, 0.42];
 
-export default function FoodImageUpload({ image, onImageChange }) {
+export default function FoodImageUpload({ image, onImageChange, isProcessing, onProcessingChange }) {
   const uploadImage = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -20,46 +22,65 @@ export default function FoodImageUpload({ image, onImageChange }) {
       return;
     }
 
+    const fileInput = event.target;
+    onProcessingChange(true);
     const reader = new FileReader();
+    const failProcessing = (message) => {
+      toast.error(message);
+      onProcessingChange(false);
+      fileInput.value = "";
+    };
     reader.onload = () => {
       if (typeof reader.result !== "string") {
-        toast.error("Unable to read this image.");
+        failProcessing("Unable to read this image.");
         return;
       }
 
       const sourceImage = new Image();
       sourceImage.onload = () => {
-        const maxDimension = 1200;
-        const scale = Math.min(1, maxDimension / Math.max(sourceImage.width, sourceImage.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(sourceImage.width * scale);
-        canvas.height = Math.round(sourceImage.height * scale);
-        const context = canvas.getContext("2d");
-        if (!context) {
-          toast.error("Unable to process this image.");
-          return;
+        try {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          if (!context) {
+            failProcessing("Unable to process this image.");
+            return;
+          }
+
+          for (const maxDimension of IMAGE_DIMENSIONS) {
+            const scale = Math.min(1, maxDimension / Math.max(sourceImage.width, sourceImage.height));
+            canvas.width = Math.round(sourceImage.width * scale);
+            canvas.height = Math.round(sourceImage.height * scale);
+            context.fillStyle = "#fff";
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
+
+            for (const quality of IMAGE_QUALITIES) {
+              const optimizedImage = canvas.toDataURL("image/jpeg", quality);
+              if (optimizedImage.length <= MAX_STORED_IMAGE_LENGTH) {
+                onImageChange(optimizedImage);
+                onProcessingChange(false);
+                fileInput.value = "";
+                return;
+              }
+            }
+          }
+          failProcessing("This photo could not be optimized enough. Choose a smaller image.");
+        } catch (error) {
+          console.error("Food image optimization failed:", error);
+          failProcessing("Unable to process this image.");
         }
-        context.fillStyle = "#fff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(sourceImage, 0, 0, canvas.width, canvas.height);
-        const optimizedImage = canvas.toDataURL("image/jpeg", 0.78);
-        if (optimizedImage.length > MAX_STORED_IMAGE_LENGTH) {
-          toast.error("This photo is still too large after optimization. Choose a smaller image.");
-          return;
-        }
-        onImageChange(optimizedImage);
       };
-      sourceImage.onerror = () => toast.error("Unable to process this image.");
+      sourceImage.onerror = () => failProcessing("Unable to process this image.");
       sourceImage.src = reader.result;
     };
-    reader.onerror = () => toast.error("Unable to read this image.");
+    reader.onerror = () => failProcessing("Unable to read this image.");
     reader.readAsDataURL(file);
   };
 
   return (
     <div className="food-image-upload">
       <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="food-image-file">
-        Or upload a photo (max 8 MB; optimized automatically)
+        Upload a photo <span>(max 8 MB; optimized automatically)</span>
       </label>
       <input
         id="food-image-file"
@@ -67,9 +88,14 @@ export default function FoodImageUpload({ image, onImageChange }) {
         type="file"
         accept="image/*"
         onChange={uploadImage}
+        disabled={isProcessing}
       />
+      {isProcessing && <p className="food-image-status" role="status">Optimizing photo…</p>}
       {image && (
-        <img className="food-image-preview" src={image} alt="Food item preview" />
+        <div className="food-image-preview-wrap">
+          <img className="food-image-preview" src={image} alt="Food item preview" />
+          <p>Photo ready to save</p>
+        </div>
       )}
     </div>
   );
