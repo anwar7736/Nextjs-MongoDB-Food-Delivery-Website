@@ -218,7 +218,7 @@ const EditOrder = () => {
                                 Customer
                             </label>
                             <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="user_id" value={watch("user_id") || ""} {...register("user_id", { required: 'This field is required.' })} >
-                                <option disabled value="">Select Any Customer</option>
+                                <option value="">Select Any Customer</option>
                                 {
                                     customers.map(customer => (
                                         <option key={customer._id} value={customer._id}>{customer.name}</option>
@@ -246,7 +246,7 @@ const EditOrder = () => {
                                 Order Status
                             </label>
                             <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="status_id" value={watch("status_id") || ""} {...register("status_id", { required: 'This field is required.' })} >
-                                <option disabled value="">Select Any Status</option>
+                                <option value="">Select Any Status</option>
                                 {
                                     statuses.map(status => (
                                         <option key={status._id} value={status._id}>{status.name}</option>

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import ValidationError from "../../ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import FoodImageUpload from "./FoodImageUpload";
 const AddFood = (props) => {
   const [isDisabled, setIsDisabled] = useState(false);
@@ -11,9 +11,13 @@ const AddFood = (props) => {
     register,
     handleSubmit,
     watch,
-    setValue,
+    trigger,
     formState: { errors },
   } = useForm();
+  const uploadedImageRef = useRef("");
+  const imageField = register("image", {
+    validate: (value) => uploadedImageRef.current || value?.trim() || "Upload a photo or provide an image URL."
+  });
 
   const submitFormHandler = async (data) => {
     setIsDisabled(true);
@@ -71,16 +75,25 @@ const AddFood = (props) => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">
               Image Link
             </label>
-            <textarea name="image" id="image" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" placeholder="Paste an image URL (optional if you upload)" {...register("image", {
-              validate: (value) => value?.trim() || "Upload a photo or provide an image URL."
-            })}></textarea>
+            <textarea
+              id="image"
+              className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1"
+              placeholder="Paste an image URL (optional if you upload)"
+              {...imageField}
+              onChange={(event) => {
+                uploadedImageRef.current = "";
+                setUploadedImage("");
+                imageField.onChange(event);
+              }}
+            />
             {errors.image && <ValidationError message={errors.image.message} />}
           </div>
           <FoodImageUpload
             image={uploadedImage || watch("image")}
             onImageChange={(image) => {
+              uploadedImageRef.current = image;
               setUploadedImage(image);
-              setValue("image", image, { shouldDirty: true, shouldValidate: true });
+              trigger("image");
             }}
           />
           <div className="flex items-center justify-between">
