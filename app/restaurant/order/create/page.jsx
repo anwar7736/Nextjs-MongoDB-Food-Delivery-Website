@@ -128,6 +128,13 @@ const PlaceOrder = () => {
 
     }
 
+    const changeQuantity = (index, adjustment) => {
+        const row = rows[index];
+        if (!row) return;
+        const quantity = Math.min(99, Math.max(1, Number(row.quantity) + adjustment));
+        qtyChange(index, quantity);
+    }
+
     const priceChange = async (index, value) => {
         const nextRows = rows.map((row, rowIndex) => rowIndex === index
             ? { ...row, price: Number(value) }
@@ -261,9 +268,13 @@ const PlaceOrder = () => {
                                                 </select>
                                             </td>
                                             <td data-label="Quantity">
-                                                <input type="number" name="quantity[]" min="1" max="99" value={row.quantity}
-                                                    onChange={(e) => qtyChange(index, e.target.value)}
-                                                    className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
+                                                <div className="cart-quantity order-row-quantity">
+                                                    <button type="button" aria-label={`Decrease item ${index + 1} quantity`} disabled={row.quantity <= 1} onClick={() => changeQuantity(index, -1)}>-</button>
+                                                    <input type="number" name="quantity[]" min="1" max="99" value={row.quantity}
+                                                        onChange={(e) => qtyChange(index, e.target.value)}
+                                                        className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
+                                                    <button type="button" aria-label={`Increase item ${index + 1} quantity`} disabled={row.quantity >= 99} onClick={() => changeQuantity(index, 1)}>+</button>
+                                                </div>
                                             </td>
                                             <td data-label="Price">
                                                 <input type="number" name="price[]" min="0" value={row.price}

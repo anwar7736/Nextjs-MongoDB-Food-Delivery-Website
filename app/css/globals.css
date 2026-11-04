@@ -423,14 +423,17 @@
   color: var(--muted);
 }
 
-.cart-quantity {
+.cart-quantity,
+.order-row-quantity {
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.cart-quantity button {
+.cart-quantity button,
+.order-row-quantity button {
   width: 34px;
+  min-width: 34px;
   height: 34px;
   color: var(--brand-dark);
   background: #f0fdf4;
@@ -439,12 +442,26 @@
   font-size: 1.15rem;
 }
 
-.cart-quantity input {
+.cart-quantity button:disabled,
+.order-row-quantity button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.cart-quantity input,
+.order-row-quantity input {
   width: 48px;
+  min-height: 34px;
   height: 34px;
+  padding: 0 4px;
   text-align: center;
   border: 1px solid var(--border);
   border-radius: 8px;
+}
+
+.order-row-quantity {
+  width: fit-content;
+  max-width: 100%;
 }
 
 .cart-item-card .remove_button {
@@ -2008,6 +2025,15 @@ input.onlyNumber {
     max-width: none;
     min-height: 44px;
     min-width: 0;
+  }
+
+  .order-editor-table .order-row-quantity input {
+    width: 48px;
+    min-width: 48px;
+    min-height: 34px;
+    height: 34px;
+    flex: 0 0 48px;
+    padding: 0 4px;
   }
 
   .order-editor-table tfoot {

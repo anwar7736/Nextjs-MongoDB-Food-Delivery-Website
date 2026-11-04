@@ -117,7 +117,7 @@ export default function AuthenticatorSettings({ accountType, account }) {
             <label className="form-label" htmlFor="setup-authenticator-code">Six-digit code</label>
             <input
               id="setup-authenticator-code"
-              className="form-input authenticator-code-input mb-2"
+              className="form-input authenticator-code-input mb-3"
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
