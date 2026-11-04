@@ -13,6 +13,282 @@
   --card-shadow: 0 16px 42px rgba(29, 55, 37, 0.08);
 }
 
+.food-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.food-card {
+  overflow: hidden;
+  color: #24352a;
+  background: #fff;
+  border: 1px solid #e8eee9;
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(29, 55, 37, 0.08);
+  transition: box-shadow 180ms ease, transform 180ms ease;
+}
+
+.food-card:hover {
+  box-shadow: 0 18px 38px rgba(29, 55, 37, 0.13);
+  transform: translateY(-3px);
+}
+
+.food-card > img {
+  display: block;
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+  background: #f1f5f2;
+}
+
+.food-card-content {
+  padding: 18px;
+}
+
+.food-card-content h2 {
+  margin: 0;
+  font-size: 1.12rem;
+  font-weight: 750;
+}
+
+.food-card-price {
+  margin: 8px 0 0;
+  color: var(--brand-dark);
+  font-size: 1.12rem;
+  font-weight: 750;
+}
+
+.food-card .add_button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  margin-top: 14px;
+  color: #fff;
+  background: var(--brand);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.food-dashboard-cards,
+.order-dashboard-cards {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+  text-align: left;
+}
+
+.food-dashboard-card,
+.order-dashboard-card {
+  display: flex;
+  min-width: 0;
+  gap: 14px;
+  padding: 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(29, 55, 37, 0.07);
+}
+
+.food-dashboard-card > img {
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f1f5f2;
+}
+
+.food-dashboard-card-details {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 8px;
+}
+
+.food-dashboard-card-details h5,
+.order-dashboard-card-heading h5 {
+  margin: 0;
+  color: #1f3326;
+  font-size: 1rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
+.food-dashboard-card-details > p,
+.order-dashboard-card-heading p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.food-dashboard-card-actions,
+.order-dashboard-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.order-dashboard-card {
+  display: block;
+}
+
+.order-dashboard-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-dashboard-card-heading > span {
+  flex: 0 0 auto;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.order-dashboard-card-details {
+  display: grid;
+  gap: 8px;
+  padding: 14px 0;
+  color: var(--muted);
+  font-size: 0.87rem;
+}
+
+.order-dashboard-card-details p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.order-dashboard-card-details strong {
+  display: block;
+  margin-bottom: 2px;
+  color: #34483a;
+}
+
+.order-dashboard-card-actions button,
+.order-dashboard-card-actions a {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: #fff;
+  text-decoration: none;
+  background: #1f2937;
+  border: 0;
+  border-radius: 9px;
+}
+
+.order-dashboard-card-actions a {
+  background: var(--brand);
+}
+
+.order-dashboard-card-actions button:last-child {
+  background: #dc2626;
+}
+
+.cart-item-card {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr) max-content;
+  gap: 18px;
+  align-items: center;
+  padding: 18px;
+  margin-bottom: 16px;
+  color: #24352a;
+  background: #fff;
+  border: 1px solid #e8eee9;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(29, 55, 37, 0.07);
+}
+
+.cart-item-card > img {
+  width: 104px;
+  height: 104px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #f1f5f2;
+}
+
+.cart-item-details h2 {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 750;
+}
+
+.cart-item-details > p {
+  margin: 5px 0;
+  color: var(--muted);
+}
+
+.cart-quantity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cart-quantity button {
+  width: 34px;
+  height: 34px;
+  color: var(--brand-dark);
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 9px;
+  font-size: 1.15rem;
+}
+
+.cart-quantity input {
+  width: 48px;
+  height: 34px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.cart-item-card .remove_button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  margin-top: 8px;
+  color: #fff;
+  background: #e11d48;
+  border: 0;
+  border-radius: 999px;
+}
+
+.cart-item-total {
+  color: #1f3326;
+  font-size: 1.05rem;
+  white-space: nowrap;
+}
+
+.food-image-upload {
+  margin-bottom: 18px;
+  text-align: left;
+}
+
+.food-image-file {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  color: #425549;
+  border: 1px dashed #9fb6a4;
+  border-radius: 10px;
+}
+
+.food-image-preview {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: 170px;
+  margin-top: 12px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -39,6 +315,39 @@ body {
   flex-direction: column;
   align-items: flex-end;
   gap: 14px;
+}
+
+.scroll-to-top {
+  position: fixed;
+  left: max(22px, env(safe-area-inset-left));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 80;
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  color: #fff;
+  background: var(--brand);
+  border: 0;
+  border-radius: 50%;
+  box-shadow: 0 8px 26px rgba(15, 23, 42, 0.24);
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.scroll-to-top:hover {
+  background: var(--brand-dark);
+  transform: translateY(-2px);
+}
+
+.scroll-to-top svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
 .support-launcher {
@@ -264,6 +573,13 @@ body {
   100% {
     opacity: 0;
     transform: scale(1.38);
+  }
+
+  .scroll-to-top {
+    left: max(16px, env(safe-area-inset-left));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    width: 46px;
+    height: 46px;
   }
 }
 
@@ -1210,6 +1526,31 @@ a {
   line-height: 1.55;
 }
 
+.authenticator-key-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  margin: 6px 0 16px;
+  background: #f8faf8;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.authenticator-key-row code {
+  min-width: 0;
+  color: #233b2a;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  overflow-wrap: anywhere;
+}
+
+.authenticator-key-row .text-button {
+  flex: 0 0 auto;
+}
+
 .footer-header {
   padding: 20px 16px;
   margin: 36px 0 0;
@@ -1311,6 +1652,10 @@ input.onlyNumber {
 }
 
 @media (max-width: 1020px) {
+  .food-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .site-header-inner {
     grid-template-columns: auto 1fr auto;
     gap: 14px;
@@ -1364,7 +1709,23 @@ input.onlyNumber {
   }
 }
 
+@media (min-width: 640px) {
+  .food-dashboard-cards,
+  .order-dashboard-cards {
+    display: none;
+  }
+}
+
 @media (max-width: 640px) {
+  .food-card-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .food-card > img {
+    height: 220px;
+  }
+
   .site-header-inner {
     grid-template-columns: auto 1fr auto;
     width: calc(100% - 24px);
@@ -1491,6 +1852,34 @@ input.onlyNumber {
     height: 76px;
   }
 
+  .cart-item-card {
+    grid-template-columns: 76px minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .cart-item-card > img {
+    width: 76px;
+    height: 76px;
+    align-self: start;
+  }
+
+  .cart-item-details h2 {
+    font-size: 0.98rem;
+  }
+
+  .cart-item-total {
+    grid-column: 2;
+    margin-top: -6px;
+  }
+
+  .food-dashboard-card > img {
+    width: 72px;
+    height: 72px;
+    flex-basis: 72px;
+  }
+
   .details-wrapper {
     gap: 8px;
     padding: 16px;
@@ -1518,6 +1907,11 @@ input.onlyNumber {
   .security-actions > * {
     width: 100%;
     max-width: none;
+  }
+
+  .authenticator-key-row {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .list-item-block-1,

@@ -11,13 +11,10 @@ import { deliverySchema } from "@/app/models/deliveryModel";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 
 export async function GET(request, { params }) {
-  let { _id } = params;
+  const { _id } = await params;
   const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
   if (!session) {
     return NextResponse.json({ success: false, message: "Sign in to view this order." }, { status: 401 });
-  }
-  if (!mongoose.Types.ObjectId.isValid(_id)) {
-    return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
   }
   if (!mongoose.Types.ObjectId.isValid(_id)) {
     return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
@@ -67,7 +64,7 @@ export async function GET(request, { params }) {
         as: "delivery"
       }
     },
-    { $unwind: "$delivery" },
+    { $unwind: { path: "$delivery", preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
         from: "order_statuses",
@@ -144,7 +141,7 @@ export async function GET(request, { params }) {
 }
 
 export async function PUT(request, { params }) {
-  let { _id } = params;
+  const { _id } = await params;
   const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
   if (session?.type !== "restaurant") {
     return NextResponse.json({ success: false, message: "Restaurant sign-in is required." }, { status: 401 });
@@ -219,7 +216,7 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-  let { _id } = params;
+  const { _id } = await params;
   const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
   if (session?.type !== "restaurant") {
     return NextResponse.json({ success: false, message: "Restaurant sign-in is required." }, { status: 401 });

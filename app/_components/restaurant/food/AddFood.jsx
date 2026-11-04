@@ -1,12 +1,12 @@
 import { useForm } from "react-hook-form";
-import { useRouter } from 'next/navigation'
 import { toast } from "react-toastify";
 import ValidationError from "../../ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 import { useState } from "react";
+import FoodImageUpload from "./FoodImageUpload";
 const AddFood = (props) => {
-  const router = useRouter();
   const [isDisabled, setIsDisabled] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState("");
   const {
     register,
     handleSubmit,
@@ -16,24 +16,29 @@ const AddFood = (props) => {
 
   const submitFormHandler = async (data) => {
     setIsDisabled(true);
-    const restaurant = await restaurant_auth();
-    data.restaurant_id = restaurant._id;
-    console.log(data);
+    try {
+      const restaurant = await restaurant_auth();
+      data.restaurant_id = restaurant._id;
+      data.image = uploadedImage || data.image;
 
-    let res = await fetch("/api/v1/restaurant/food", {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
+      const response = await fetch("/api/v1/restaurant/food", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        toast.error(result.message || "Unable to add this food item.");
+        return;
+      }
 
-    res = await res.json();
-    setIsDisabled(false);
-    if (res.success) {
       props.setStatus(1);
-      toast.success(res.message);
-    }
-    else {
-      toast.error(res.message);
-      console.log(res);
+      toast.success(result.message);
+    } catch (error) {
+      console.error("Food item creation failed:", error);
+      toast.error("Unable to add this food item.");
+    } finally {
+      setIsDisabled(false);
     }
   }
 
@@ -65,9 +70,12 @@ const AddFood = (props) => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">
               Image Link
             </label>
-            <textarea name="image" id="image" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" type="text" placeholder="Image Link" {...register("image", { required: 'This field is required.' })}></textarea>
+            <textarea name="image" id="image" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" placeholder="Paste an image URL (optional if you upload)" {...register("image", {
+              validate: (value) => uploadedImage || value?.trim() || "Upload a photo or provide an image URL."
+            })}></textarea>
             {errors.image && <ValidationError message={errors.image.message} />}
           </div>
+          <FoodImageUpload image={uploadedImage || watch("image")} onImageChange={setUploadedImage} />
           <div className="flex items-center justify-between">
             <button
               disabled={isDisabled}

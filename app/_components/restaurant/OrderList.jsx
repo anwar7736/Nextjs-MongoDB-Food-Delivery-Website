@@ -13,33 +13,40 @@ const OrderList = () => {
   const [isDisabled, setIsDisabled] = useState(false);
   
   const getOrderList = async () => {
-    const user = await restaurant_auth();
-    let res = await fetch(`/api/v1/order?type=restaurant&id=${user._id}`)
-    res = await res.json();
-
-    if (res.success) {
-      setOrders(res.data);
-
+    try {
+      const user = await restaurant_auth();
+      const response = await fetch(`/api/v1/order?type=restaurant&id=${user._id}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to load orders.");
+      }
+      setOrders(result.data || []);
+    } catch (error) {
+      console.error("Order list loading failed:", error);
+      toast.error("Unable to load orders.");
     }
-
   }
   const showInvoice = async (id) => {
     setIsDisabled(true);
-    let res = await fetch(`/api/v1/order/${id}`)
-    res = await res.json();
-    if (res.success) {
-      setOrder(res.data[0]);
+    try {
+      const response = await fetch(`/api/v1/order/${id}`);
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.data?.[0]) {
+        toast.error(result.message || "Unable to load this order.");
+        return;
+      }
+      setOrder(result.data[0]);
       setModalOpen(true);
+    } catch (error) {
+      console.error("Order detail loading failed:", error);
+      toast.error("Unable to load this order.");
+    } finally {
       setIsDisabled(false);
-    } else {
-      setIsDisabled(false);
-      toast.error(res);
     }
   }
 
   const deleteItem = async (id) => {
-    setIsDisabled(true);
-    Swal.fire({
+    const confirmation = await Swal.fire({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
@@ -47,23 +54,31 @@ const OrderList = () => {
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        let res = await fetch(`/api/v1/order/${id}`, {
-          method: "DELETE"
-        })
-        res = await res.json();
-        if (res.success) {
-          getOrderList();
-          Swal.fire({
-            title: "Deleted!",
-            text: res.message,
-            icon: "success"
-          });
-        }
-      }
-      setIsDisabled(false);
     });
+    if (!confirmation.isConfirmed) return;
+
+    setIsDisabled(true);
+    try {
+      const response = await fetch(`/api/v1/order/${id}`, {
+        method: "DELETE"
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        toast.error(result.message || "Unable to delete this order.");
+        return;
+      }
+      setOrders((items) => items.filter((item) => item._id !== id));
+      Swal.fire({
+        title: "Deleted!",
+        text: result.message,
+        icon: "success"
+      });
+    } catch (error) {
+      console.error("Order deletion failed:", error);
+      toast.error("Unable to delete this order.");
+    } finally {
+      setIsDisabled(false);
+    }
   }
 
   useEffect(() => {
@@ -76,7 +91,7 @@ const OrderList = () => {
         <div align="right" className="m-4">
           <Link href="/restaurant/order/create" className="bg-purple-600 p-2 text-white rounded">Place Order</Link>
         </div>
-        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+        <div className="relative hidden overflow-x-auto shadow-md sm:block sm:rounded-lg">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
@@ -164,6 +179,31 @@ const OrderList = () => {
               }
             </tbody>
           </table>
+        </div>
+        <div className="order-dashboard-cards sm:hidden">
+          {orders.length === 0 ? (
+            <p className="rounded-xl bg-white p-5 text-center text-gray-500">No orders yet.</p>
+          ) : orders.map((order) => (
+            <article className="order-dashboard-card" key={order._id}>
+              <div className="order-dashboard-card-heading">
+                <div>
+                  <p>{order.date && dateFormat(order.date)}</p>
+                  <h5>{order.invoice_no}</h5>
+                </div>
+                <span style={{ color: order.status?.[0]?.color }}>{order.status?.[0]?.name || "Pending"}</span>
+              </div>
+              <div className="order-dashboard-card-details">
+                <p><strong>Customer</strong>{order.user?.[0]?.name || "—"} · {order.user?.[0]?.phone || "—"}</p>
+                <p><strong>Delivery</strong>{order.delivery?.[0]?.name || "Unassigned"} · {order.delivery?.[0]?.phone || "—"}</p>
+                <p><strong>Total</strong>${Number(order.final_total ?? order.total ?? 0).toFixed(2)}</p>
+              </div>
+              <div className="order-dashboard-card-actions">
+                <button disabled={isDisabled} onClick={() => showInvoice(order._id)}>View</button>
+                <Link href={`/restaurant/order/edit/${order._id}`}>Edit</Link>
+                <button disabled={isDisabled} onClick={() => deleteItem(order._id)}>Delete</button>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
       <InvoiceModal

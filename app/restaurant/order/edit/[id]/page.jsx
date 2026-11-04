@@ -1,13 +1,13 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { toast } from "react-toastify";
 import ValidationError from "@/app/_components/ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 import withAuth from "@/app/hoc/withAuth";
 import { useEffect, useState } from "react";
-import { setRandomFallback } from "bcryptjs";
-const EditOrder = ({ params }) => {
+const EditOrder = () => {
+    const params = useParams();
     const router = useRouter();
     const id = params.id;
     const [customers, setCustomers] = useState([]);
@@ -15,7 +15,6 @@ const EditOrder = ({ params }) => {
     const [statuses, setStatuses] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
     const [rows, setRows] = useState([]);
-    const [order, setOrder] = useState([]);
     const [isDisabled, setIsDisabled] = useState(false);
     const [summary, setSummary] = useState({ total: 0, shipping_charge: 50, final_total: 0 });
     const {
@@ -31,45 +30,46 @@ const EditOrder = ({ params }) => {
         data.total = summary.total;
         data.shipping_charge = summary.shipping_charge;
         data.final_total = summary.final_total;
-        data.items = rows.filter(row => row.id != '' && row.quantity > 0 && row.price > 0);
+        data.items = rows.filter(row => row.id !== '' && Number.isInteger(row.quantity) && row.quantity > 0 && row.quantity <= 99 &&
+            Number.isFinite(row.price) && row.price >= 0);
         if (data.items.length == 0) {
             setIsDisabled(false);
             toast.error('Please choose atleast one item!');
             return;
         }
-        let res = await fetch(`/api/v1/order/${id}`, {
-            method: "PUT",
-            body: JSON.stringify(data)
-        });
-
-        res = await res.json();
-        if (res.success) {
-            toast.success(res.message);
+        try {
+            const response = await fetch(`/api/v1/order/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                toast.error(result.message || "Unable to update this order.");
+                return;
+            }
+            toast.success(result.message);
             router.push('/restaurant/dashboard');
-        }
-        else {
+        } catch (error) {
+            console.error("Order update failed:", error);
+            toast.error("Unable to update this order.");
+        } finally {
             setIsDisabled(false);
-            toast.error(res.message);
-            console.log(res);
         }
     }
 
-    const calculateRowTotal = async (data) => {
-        let total = 0;
-        let shipping_charge = summary.shipping_charge;
-        data = data ?? rows;
-        data.map(row => {
-            total += row.quantity * row.price;
-        });
-        let final_total = total + shipping_charge;
-        setSummary((prev) => ({ ...prev, total, final_total }));
+    const calculateRowTotal = (data, shippingCharge = summary.shipping_charge) => {
+        const total = (data ?? rows).reduce((sum, row) => sum + row.quantity * row.price, 0);
+        setSummary((prev) => ({ ...prev, total, final_total: total + shippingCharge }));
     }
 
     const onShippingChargeChange = (shipping_charge) => {
-        shipping_charge = Number(shipping_charge);
-        setSummary((prev) => ({ ...prev, shipping_charge }));
-        let final_total = (Number(summary.total) + shipping_charge);
-        setSummary((prev) => ({ ...prev, final_total }));
+        const charge = Number(shipping_charge);
+        setSummary((prev) => ({
+            ...prev,
+            shipping_charge: charge,
+            final_total: prev.total + charge,
+        }));
     }
 
     const addMoreRow = async () => {
@@ -84,42 +84,52 @@ const EditOrder = ({ params }) => {
     }
 
     const itemChange = async (index, id) => {
-        const oldData = rows;
-        const duplicateRows = rows.filter(row => id && row.id == id)
-        const count = duplicateRows.length;
-        if (count > 0 || !id) {
-            oldData[index].id = "";
-            oldData[index].price = 0;
-            if (count > 0) {
-                toast.error('Duplicate item not allowed!');
+        const duplicate = id && rows.some((row, rowIndex) => rowIndex !== index && row.id === id);
+        const nextRows = rows.map((row, rowIndex) => rowIndex === index
+            ? { ...row, id: "", price: 0 }
+            : { ...row });
+        if (duplicate) {
+            toast.error('Duplicate item not allowed!');
+        } else if (id) {
+            try {
+                const response = await fetch(`/api/v1/restaurant/food/${id}`);
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    toast.error(result.message || "Unable to load this food item.");
+                    setRows(nextRows);
+                    calculateRowTotal(nextRows);
+                    return;
+                }
+                nextRows[index] = { ...nextRows[index], id: result.data._id, price: result.data.price };
+            } catch (error) {
+                console.error("Food item loading failed:", error);
+                toast.error("Unable to load this food item.");
+                setRows(nextRows);
+                calculateRowTotal(nextRows);
+                return;
             }
         }
 
-        else {
-            let res = await fetch(`/api/v1/restaurant/food/${id}`);
-            res = await res.json();
-            oldData[index].id = res.data._id;
-            oldData[index].price = res.data.price;
-        }
-
-        setRows(oldData);
-        calculateRowTotal();
+        setRows(nextRows);
+        calculateRowTotal(nextRows);
 
     }
 
     const qtyChange = async (index, value) => {
-        const oldData = rows;
-        oldData[index].quantity = Number(value);
-        setRows(oldData);
-        calculateRowTotal();
+        const nextRows = rows.map((row, rowIndex) => rowIndex === index
+            ? { ...row, quantity: Number(value) }
+            : row);
+        setRows(nextRows);
+        calculateRowTotal(nextRows);
 
     }
 
     const priceChange = async (index, value) => {
-        const oldData = rows;
-        oldData[index].price = Number(value);
-        setRows(oldData);
-        calculateRowTotal();
+        const nextRows = rows.map((row, rowIndex) => rowIndex === index
+            ? { ...row, price: Number(value) }
+            : row);
+        setRows(nextRows);
+        calculateRowTotal(nextRows);
 
     }
 
@@ -162,27 +172,40 @@ const EditOrder = ({ params }) => {
     }
 
     const getOrderDetails = async () => {
-        let res = await fetch(`/api/v1/order/${id}`);
-        res = await res.json();
-        if (res.success) {
-            setOrder(res.data[0]);
-            setRows(res.data[0].order_details);
-            calculateRowTotal(res.data[0].order_details);
-            reset({
-                user_id: order?.user?._id,
-                delivery_partner_id: order?.delivery?._id,
-                status_id: order?.status?._id,
+        try {
+            const response = await fetch(`/api/v1/order/${id}`);
+            const result = await response.json();
+            if (!response.ok || !result.success || !result.data?.[0]) {
+                toast.error(result.message || "Unable to load this order.");
+                return;
+            }
+            const currentOrder = result.data[0];
+            setRows(currentOrder.order_details || []);
+            const shippingCharge = Number(currentOrder.shipping_charge) || 0;
+            setSummary({
+                total: (currentOrder.order_details || []).reduce((total, row) => total + row.quantity * row.price, 0),
+                shipping_charge: shippingCharge,
+                final_total: Number(currentOrder.final_total) || 0,
             });
+            reset({
+                user_id: currentOrder.user?._id || "",
+                delivery_partner_id: currentOrder.delivery?._id || "",
+                status_id: currentOrder.status?._id || "",
+            });
+        } catch (error) {
+            console.error("Order loading failed:", error);
+            toast.error("Unable to load this order.");
         }
     }
 
     useEffect(() => {
+        if (!id) return;
         getAllCustomers();
         getAllDeliveries();
         getAllOrderStatuses();
         getAllFoodItems();
         getOrderDetails();
-    }, []);
+    }, [id]);
 
     return (
         <div align="center">
@@ -194,11 +217,11 @@ const EditOrder = ({ params }) => {
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                                 Customer
                             </label>
-                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="user_id" {...register("user_id", { required: 'This field is required.' })} >
-                                <option disabled selected value="">Select Any Customer</option>
+                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="user_id" value={watch("user_id") || ""} {...register("user_id", { required: 'This field is required.' })} >
+                                <option disabled value="">Select Any Customer</option>
                                 {
                                     customers.map(customer => (
-                                        <option selected={customer?._id == order?.user?._id} value={customer._id}>{customer.name}</option>
+                                        <option key={customer._id} value={customer._id}>{customer.name}</option>
                                     ))
                                 }
                             </select>
@@ -208,11 +231,11 @@ const EditOrder = ({ params }) => {
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                                 Delivery Partner
                             </label>
-                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="delivery_partner_id" {...register("delivery_partner_id", { required: 'This field is required.' })} >
-                                <option disabled selected value="">Select Any Delivery Partner</option>
+                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="delivery_partner_id" value={watch("delivery_partner_id") || ""} {...register("delivery_partner_id", { required: 'This field is required.' })} >
+                                <option disabled value="">Select Any Delivery Partner</option>
                                 {
                                     deliveries.map(delivery => (
-                                        <option selected={delivery?._id == order?.delivery?._id} value={delivery._id}>{delivery.name}</option>
+                                        <option key={delivery._id} value={delivery._id}>{delivery.name}</option>
                                     ))
                                 }
                             </select>
@@ -222,11 +245,11 @@ const EditOrder = ({ params }) => {
                             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
                                 Order Status
                             </label>
-                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="status_id" {...register("status_id", { required: 'This field is required.' })} >
-                                <option disabled selected value="">Select Any Status</option>
+                            <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="status_id" value={watch("status_id") || ""} {...register("status_id", { required: 'This field is required.' })} >
+                                <option disabled value="">Select Any Status</option>
                                 {
                                     statuses.map(status => (
-                                        <option selected={status?._id == order?.status?._id} value={status._id}>{status.name}</option>
+                                        <option key={status._id} value={status._id}>{status.name}</option>
                                     ))
                                 }
                             </select>
@@ -247,24 +270,24 @@ const EditOrder = ({ params }) => {
                             <tbody>
                                 {
                                     rows.map((row, index) => (
-                                        <tr>
+                                        <tr key={`${row.id || "new"}-${index}`}>
                                             <td>
                                                 <select name="item_id[]" className="shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" value={row.id} onChange={(e) => itemChange(index, e.target.value)}>
-                                                    <option value="" selected>Select Any Item</option>
+                                                    <option value="">Select Any Item</option>
                                                     {
                                                         foodItems.map((item, i) => (
-                                                            <option key={i} value={item._id} selected={item.id == row.id} >{item.name}</option>
+                                                            <option key={i} value={item._id}>{item.name}</option>
                                                         ))
                                                     }
                                                 </select>
                                             </td>
                                             <td>
-                                                <input type="number" name="quantity[]" value={row.quantity}
+                                                <input type="number" name="quantity[]" min="1" max="99" value={row.quantity}
                                                     onChange={(e) => qtyChange(index, e.target.value)}
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>
                                             <td>
-                                                <input type="number" name="price[]" value={row.price}
+                                                <input type="number" name="price[]" min="0" value={row.price}
                                                     onChange={(e) => priceChange(index, e.target.value)}
                                                     className="onlyNumber shadow appearance-none border border-green-300 rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" />
                                             </td>

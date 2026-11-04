@@ -9,6 +9,7 @@ export default function AuthenticatorSettings({ accountType, account }) {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [qrCode, setQrCode] = useState("");
+  const [setupKey, setSetupKey] = useState("");
   const [isBusy, setIsBusy] = useState(false);
 
   const sendRequest = async (action, token) => {
@@ -33,11 +34,13 @@ export default function AuthenticatorSettings({ accountType, account }) {
 
       if (action === "setup") {
         setQrCode(result.qrCode);
+        setSetupKey(result.secret);
         toast.info(result.message);
       } else {
         const enabled = action === "confirm";
         setIsEnabled(enabled);
         setQrCode("");
+        setSetupKey("");
         setPassword("");
         setCode("");
         setCookie(`${accountType}_auth`, JSON.stringify({ ...account, twoFactorEnabled: enabled }));
@@ -49,6 +52,15 @@ export default function AuthenticatorSettings({ accountType, account }) {
       return false;
     } finally {
       setIsBusy(false);
+    }
+  };
+
+  const copySetupKey = async () => {
+    try {
+      await navigator.clipboard.writeText(setupKey);
+      toast.success("Setup key copied to clipboard.");
+    } catch {
+      toast.error("Unable to copy the setup key. Select and copy it manually.");
     }
   };
 
@@ -96,6 +108,11 @@ export default function AuthenticatorSettings({ accountType, account }) {
           <img className="authenticator-qr" src={qrCode} alt="QR code for your authenticator app" />
           <div className="security-enrollment-copy">
             <p>Scan this QR code with your authenticator app, then enter the six-digit code it displays.</p>
+            <label className="form-label" htmlFor="authenticator-setup-key">Setup key</label>
+            <div className="authenticator-key-row">
+              <code id="authenticator-setup-key">{setupKey}</code>
+              <button className="text-button" type="button" onClick={copySetupKey}>Copy key</button>
+            </div>
             <label className="form-label" htmlFor="setup-authenticator-code">Six-digit code</label>
             <input
               id="setup-authenticator-code"
@@ -116,7 +133,10 @@ export default function AuthenticatorSettings({ accountType, account }) {
               >
                 {isBusy ? "Verifying…" : "Confirm and enable"}
               </button>
-              <button className="text-button" type="button" disabled={isBusy} onClick={() => setQrCode("")}>
+              <button className="text-button" type="button" disabled={isBusy} onClick={() => {
+                setQrCode("");
+                setSetupKey("");
+              }}>
                 Cancel
               </button>
             </div>

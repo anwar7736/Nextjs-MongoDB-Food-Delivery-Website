@@ -192,10 +192,7 @@ export async function GET(request)
       ]);
       
       
-      if(data.length > 0)
-      {
-        success = true;
-      }
+      success = true;
 
     return NextResponse.json({success, data});
 

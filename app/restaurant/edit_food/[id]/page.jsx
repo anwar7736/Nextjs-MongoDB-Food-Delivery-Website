@@ -1,11 +1,13 @@
 "use client";
 import { useForm } from "react-hook-form";
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { toast } from "react-toastify";
 import ValidationError from "@/app/_components/ValidationError";
 import { useEffect, useState } from "react";
 import withAuth from "@/app/hoc/withAuth";
-const EditFood = ({ params }) => {
+import FoodImageUpload from "@/app/_components/restaurant/food/FoodImageUpload";
+const EditFood = () => {
+  const params = useParams();
   const {
     register,
     handleSubmit,
@@ -15,36 +17,52 @@ const EditFood = ({ params }) => {
   } = useForm();
   const router = useRouter();
   const [isDisabled, setIsDisabled] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const _id = params.id;
   const getFoodItem = async () => {
-    let res = await fetch(`/api/v1/restaurant/food/${_id}`);
-    res = await res.json();
-    if (res.success) {
-      setValue("name", res.data.name);
-      setValue("price", res.data.price);
-      setValue("image", res.data.image);
+    try {
+      const response = await fetch(`/api/v1/restaurant/food/${_id}`);
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        toast.error(result.message || "Unable to load this food item.");
+        return;
+      }
+      setValue("name", result.data.name);
+      setValue("price", result.data.price);
+      setValue("image", result.data.image);
+    } catch (error) {
+      console.error("Food item loading failed:", error);
+      toast.error("Unable to load this food item.");
+    } finally {
+      setIsLoading(false);
     }
   }
   useEffect(() => {
-    getFoodItem();
-  }, []);
+    if (_id) getFoodItem();
+  }, [_id]);
 
   const submitFormHandler = async (data) => {
     setIsDisabled(true);
-    let res = await fetch(`/api/v1/restaurant/food/${_id}`, {
-      method: "PUT",
-      body: JSON.stringify(data)
-    });
-
-    res = await res.json();
-    if (res.success) {
-      toast.success(res.message);
+    try {
+      data.image = uploadedImage || data.image;
+      const response = await fetch(`/api/v1/restaurant/food/${_id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        toast.error(result.message || "Unable to update this food item.");
+        return;
+      }
+      toast.success(result.message);
       router.push('/restaurant/dashboard');
-    }
-    else {
+    } catch (error) {
+      console.error("Food item update failed:", error);
+      toast.error("Unable to update this food item.");
+    } finally {
       setIsDisabled(false);
-      toast.error(res.message);
-      console.log(res);
     }
   }
 
@@ -76,18 +94,19 @@ const EditFood = ({ params }) => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="image">
               Image Link
             </label>
-            <textarea name="image" id="image" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" type="text" placeholder="Image Link" {...register("image", { required: 'This field is required.' })}>
-
-            </textarea>
+            <textarea name="image" id="image" className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" placeholder="Paste an image URL (optional if you upload)" {...register("image", {
+              validate: (value) => uploadedImage || value?.trim() || "Upload a photo or provide an image URL."
+            })}></textarea>
             {errors.image && <ValidationError message={errors.image.message} />}
           </div>
+          <FoodImageUpload image={uploadedImage || watch("image")} onImageChange={setUploadedImage} />
           <div className="flex items-center justify-between">
             <button
               disabled={isDisabled}
               className={`bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
                 }`}
               type="submit">
-              Update
+              {isLoading ? "Loading…" : "Update"}
             </button>
           </div>
         </form>

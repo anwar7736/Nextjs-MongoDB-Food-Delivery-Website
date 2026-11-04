@@ -3,44 +3,57 @@ import { CartContext } from "@/app/contexts/CartContext";
 import { session, session_destroy } from "@/app/helpers/SessionHelper";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-const Explore = (props) => {
-  const _id = props.params.id;
+const Explore = () => {
+  const params = useParams();
+  const _id = params.id;
   const { cart, setCart } = useContext(CartContext);
   const [restaurantDetails, setRestaurantDetails] = useState([]);
   const [foodItems, setFoodItems] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const getRestaurantDetails = async () => {
-    let res = await fetch(`/api/v1/restaurant/food?restaurant_id=${_id}`);
-    res = await res.json();
-    if (res.success) {
-      setRestaurantDetails(res.restaurantDetails);
-      setFoodItems(res.foodItems);
-
+    setIsLoading(true);
+    setLoadError("");
+    try {
+      const response = await fetch(`/api/v1/restaurant/food?restaurant_id=${encodeURIComponent(_id)}`);
+      const result = await response.json();
+      if (!response.ok || !result.success || !result.restaurantDetails) {
+        throw new Error(result.message || "Unable to load this restaurant.");
+      }
+      setRestaurantDetails(result.restaurantDetails);
+      setFoodItems(result.foodItems || []);
+    } catch (error) {
+      console.error("Restaurant foods loading failed:", error);
+      setLoadError("Unable to load this restaurant's menu. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
   const addToCart = (item) => {
     setIsDisabled(true);
-    item.quantity = 1;
+    const cartItem = { ...item, quantity: 1 };
     if (cart.length > 0) {
       if (cart[0].restaurant_id != item.restaurant_id) {
         session_destroy('cart');
       }
 
-      let cartItems = session('cart');
-      let index = cartItems.findIndex(cart => cart._id == item._id);
+      const cartItems = session('cart');
+      const index = cartItems.findIndex(cart => cart._id == item._id);
       if (index != -1) {
         cartItems[index].quantity++;
       }
       else {
-        cartItems.push(item);
+        cartItems.push(cartItem);
       }
 
       session('cart', cartItems);
     }
     else {
-      session('cart', [item]);
+      session('cart', [cartItem]);
     }
     setCart(session('cart'));
     setIsDisabled(false);
@@ -48,9 +61,8 @@ const Explore = (props) => {
   }
 
   useEffect(() => {
-    getRestaurantDetails();
-
-  }, []);
+    if (_id) getRestaurantDetails();
+  }, [_id]);
 
   return (
     <div>
@@ -69,25 +81,29 @@ const Explore = (props) => {
       </div>
 
       <div className="food-list-wrapper">
-        {
-          foodItems.length > 0 ? foodItems.map((item) => (
-            <div className="list-item" key={item._id}>
-              <div><img style={{ width: 100 }} src={item.image} /></div>
-
-              <div>
-                <div>{item.name}</div>
-                <div>{item.price}</div>
-                <div className="description">{item.description}</div>
-                <button disabled={isDisabled}
-                  className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
-                    }`}
-                   onClick={() => addToCart(item)}>Add to Cart</button>
-              </div>
-
-            </div>
-          ))
-            : <h1 className="text-center text-red-600"> No Food Items Found for This Restaurant </h1>
-        }
+        {isLoading ? (
+          <p className="text-center" role="status">Loading menu…</p>
+        ) : loadError ? (
+          <p className="text-center text-red-600" role="alert">{loadError}</p>
+        ) : foodItems.length > 0 ? (
+          <div className="food-card-grid">
+            {foodItems.map((item) => (
+              <article className="food-card" key={item._id}>
+                <img src={item.image} alt={item.name} />
+                <div className="food-card-content">
+                  <h2>{item.name}</h2>
+                  <p className="food-card-price">${Number(item.price).toFixed(2)}</p>
+                  {item.description && <p className="description">{item.description}</p>}
+                  <button disabled={isDisabled}
+                    className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                    onClick={() => addToCart(item)}>Add to Cart</button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <h1 className="text-center text-red-600">No food items found for this restaurant.</h1>
+        )}
       </div>
     </div>
   )

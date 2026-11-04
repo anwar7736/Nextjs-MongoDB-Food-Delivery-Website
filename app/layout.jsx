@@ -9,6 +9,7 @@ import UserAuthContextProvider from "./contexts/UserAuthContext";
 import DeliveryAuthContextProvider from "./contexts/DeliveryAuthContext";
 import PWARegister from "./_components/PWARegister";
 import SupportWidget from "./_components/SupportWidget";
+import ScrollToTop from "./_components/layouts/ScrollToTop";
 import { ToastContainer } from "react-toastify";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -23,7 +24,7 @@ const geistMono = localFont({
 
 export const metadata = {
   title: "FoodFlow AI | Local food, delivered",
-  description: "Discover local restaurants and order your favorite food with FoodDash.",
+  description: "Discover local restaurants and order your favorite food with FoodFlow AI.",
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/icon.svg",
@@ -50,6 +51,7 @@ export default function RootLayout({ children }) {
                 {children}
                 <ToastContainer />
                 <SupportWidget />
+                <ScrollToTop />
                 <Footer />
               </DeliveryAuthContextProvider>
             </AuthContextProvider>

@@ -4,8 +4,8 @@ import bcrypt from "bcryptjs";
 import { verifyAuthSession } from "@/app/lib/session";
 const { mongoDB_connect } = require("@/app/helpers/helper");
 
-export async function PUT(request, content) {
-    let id = content.params.id;
+export async function PUT(request, { params }) {
+    const { id } = await params;
     let success = false;
     let data = [];
     let message = "";
@@ -55,7 +55,7 @@ export async function PUT(request, content) {
         }
 
         data = await userSchema.updateOne({ _id: id }, { $set: update });
-        if (data.modifiedCount > 0) {
+        if (data.matchedCount > 0) {
             success = true;
             message = "Profile updated successfully.";
             data = await userSchema.findById(id, {

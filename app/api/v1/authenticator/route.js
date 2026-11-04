@@ -61,7 +61,10 @@ export async function POST(request) {
         margin: 2,
         width: 240,
       });
-      return response(true, "Scan the QR code, then enter the six-digit code.", 200, { qrCode });
+      return response(true, "Scan the QR code or enter the setup key, then verify the six-digit code.", 200, {
+        qrCode,
+        secret,
+      });
     }
 
     if (action === "confirm") {

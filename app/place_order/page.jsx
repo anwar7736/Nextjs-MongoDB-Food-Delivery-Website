@@ -23,7 +23,7 @@ const PlaceOrder = () => {
     }, [cart]);
 
     const removeFromCart = (id) => {
-        let cartItems = cart.filter(item => item._id != id);
+        const cartItems = cart.filter(item => item._id !== id);
         if (cartItems.length > 0) {
             session('cart', cartItems);
         }
@@ -31,44 +31,32 @@ const PlaceOrder = () => {
             session_destroy('cart');
         }
 
-        setCart(session('cart'));
+        setCart(cartItems);
         toast.success("Item has been removed.");
     }
 
     const quantityChange = (item, newQty) => {
-        let cartItems = cart;
-        let index = cartItems.findIndex(row => row._id == item._id);
-        if (index != -1 && newQty > 0) {
-            cartItems[index].quantity = Number(newQty);
-            session('cart', cartItems);
-            setCart(session('cart'));
-            toast.success("Item quantity updated.");
-        }
-
+        const quantity = Number(newQty);
+        if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) return;
+        const cartItems = cart.map((row) => row._id === item._id ? { ...row, quantity } : row);
+        session('cart', cartItems);
+        setCart(cartItems);
     }
 
     const increaseQty = (item) => {
-        let cartItems = cart;
-        let index = cartItems.findIndex(row => row._id == item._id);
-        if (index != -1) {
-            cartItems[index].quantity++;
-            session('cart', cartItems);
-            setCart(session('cart'));
-            toast.success("Item quantity increased.");
-        }
+        const cartItems = cart.map((row) => row._id === item._id && row.quantity < 99
+            ? { ...row, quantity: row.quantity + 1 }
+            : row);
+        session('cart', cartItems);
+        setCart(cartItems);
     }
 
     const decreaseQty = (item) => {
-        let cartItems = cart;
-        let index = cartItems.findIndex(row => row._id == item._id);
-        if (index != -1) {
-            if (cartItems[index].quantity > 1) {
-                cartItems[index].quantity--;
-                session('cart', cartItems);
-                setCart(session('cart'));
-                toast.success("Item quantity decreased.");
-            }
-        }
+        const cartItems = cart.map((row) => row._id === item._id && row.quantity > 1
+            ? { ...row, quantity: row.quantity - 1 }
+            : row);
+        session('cart', cartItems);
+        setCart(cartItems);
     }
 
     const orderSubmit = async () => {
@@ -89,20 +77,26 @@ const PlaceOrder = () => {
             })
         });
 
-        let res = await fetch("/api/v1/order", {
-            method: "POST",
-            body: JSON.stringify(data)
-        });
-        res = await res.json();
-        if (res.success) {
+        try {
+            const response = await fetch("/api/v1/order", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                toast.error(result.message || "Unable to place this order.");
+                return;
+            }
             session_destroy('cart');
-            setCart(session('cart'));
-            toast.success(res.message);
+            setCart([]);
+            toast.success(result.message);
             router.push('/user/dashboard');
-        }
-        else{
+        } catch (error) {
+            console.error("Order placement failed:", error);
+            toast.error("Unable to place this order.");
+        } finally {
             setIsDisabled(false);
-            toast.success(res.message);
         }
     }
     return (
@@ -116,25 +110,20 @@ const PlaceOrder = () => {
                 }
                 {
                     cart.length > 0 ? cart.map((item) => (
-                        <div className="list-item" key={item._id}>
-                            <div><img style={{ width: 100 }} src={item.image} /></div>
-
-                            <div>
-                                <div>{item.name}</div>
-                                <div>{item.price}</div>
-                                <div>
-                                    <button onClick={() => decreaseQty(item)}>-</button>
-                                    <input type="number" value={item.quantity} className="onlyNumber shadow appearance-none border border-green-300 rounded w-12 py-1 px-1 text-gray-700 leading-tight focus:outline-none focus:shadow-outline m-2" onChange={(e) => quantityChange(item, e.target.value)} />
-                                    <button onClick={() => increaseQty(item)}>+</button>
+                        <article className="cart-item-card" key={item._id}>
+                            <img src={item.image} alt={item.name} />
+                            <div className="cart-item-details">
+                                <h2>{item.name}</h2>
+                                <p>${Number(item.price).toFixed(2)} each</p>
+                                <div className="cart-quantity">
+                                    <button aria-label={`Decrease ${item.name} quantity`} onClick={() => decreaseQty(item)}>-</button>
+                                    <input type="number" min="1" max="99" value={item.quantity} aria-label={`${item.name} quantity`} className="onlyNumber" onChange={(e) => quantityChange(item, e.target.value)} />
+                                    <button aria-label={`Increase ${item.name} quantity`} onClick={() => increaseQty(item)}>+</button>
                                 </div>
-                                <div className="description">{item.description}</div>
-                                {
-                                    (<button className="remove_button" onClick={() => removeFromCart(item._id)}>Remove</button>)
-                                }
-
+                                <button className="remove_button" onClick={() => removeFromCart(item._id)}>Remove</button>
                             </div>
-
-                        </div>
+                            <strong className="cart-item-total">${(item.price * item.quantity).toFixed(2)}</strong>
+                        </article>
                     ))
                         : (<h1 className="text-center text-red-600">Your cart is empty!</h1>)
                 }
@@ -144,17 +133,17 @@ const PlaceOrder = () => {
 
                         <div className="ml-3 mt-3 mb-3">
                             <h4>Shipping Information</h4>
-                            <p><b>Address:</b> Dhaka</p>
-                            <p><b>Phone:</b> 0171000000</p>
+                            <p><b>Address:</b> {user_auth()?.address || "Add an address in your profile."}</p>
+                            <p><b>Phone:</b> {user_auth()?.phone || "Add a phone number in your profile."}</p>
                         </div>
                         <hr />
                         <div className="ml-3 mt-3 mb-3">
                             <h4>Costing Information</h4>
                             <div align="left" className="">
-                                <p><b>Total Items:</b> {cart.length}</p>
-                                <p><b>Sub Total:</b>{subTotal}</p>
-                                <p><b>Shipping Charge:</b>{shippingCharge}</p>
-                                <p><b>Total Amount:</b>{subTotal + shippingCharge}</p>
+                                <p><b>Total Items:</b> {cart.reduce((total, item) => total + item.quantity, 0)}</p>
+                                <p><b>Sub Total:</b> ${subTotal.toFixed(2)}</p>
+                                <p><b>Shipping Charge:</b> ${shippingCharge.toFixed(2)}</p>
+                                <p><b>Total Amount:</b> ${(subTotal + shippingCharge).toFixed(2)}</p>
                             </div>
                             <div align="left" className=" mt-3">
                                 <button 
