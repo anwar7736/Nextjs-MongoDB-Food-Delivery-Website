@@ -18,18 +18,21 @@ const SignUp = () => {
     register,
     handleSubmit,
     watch,
+    setError,
     formState: { errors },
   } = useForm();
 
   const signupFormHandler = async (data) => {
     setIsDisabled(true);
     data.login = false;
-    let res = await fetch("api/v1/restaurant", {
+    let response = await fetch("/api/v1/restaurant", {
       method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
     });
 
-    res = await res.json();
+    response = await response.json();
+    const res = response;
     if (res.success) {
       delete res.data.password;
       deleteCookie('user_auth');
@@ -42,9 +45,11 @@ const SignUp = () => {
       toast.success(res.message);
     }
     else {
+      Object.entries(res.fieldErrors || {}).forEach(([field, message]) => {
+        setError(field, { type: "server", message });
+      });
       setIsDisabled(false);
       toast.error(res.message);
-      console.log(res);
     }
   }
 
@@ -69,7 +74,10 @@ const SignUp = () => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="phone">
               Phone
             </label>
-            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", { required: 'Provide a valid phone number.', pattern: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/ })} />
+            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", {
+              required: 'Provide a valid phone number.',
+              pattern: { value: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/, message: 'Provide a valid phone number.' }
+            })} />
             {errors.phone && <ValidationError message={errors.phone.message} />}
           </div>
           <div className="mb-4">

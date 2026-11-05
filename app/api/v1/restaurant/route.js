@@ -33,8 +33,7 @@ export async function POST(request)
         if (typeof payload.email !== "string" || typeof payload.password !== "string") {
             return NextResponse.json({ success: false, message: "Email and password are required." }, { status: 400 });
         }
-        delete payload.login;
-        data = await restaurantSchema.findOne({email:payload.email});
+        data = await restaurantSchema.findOne({email:payload.email.trim().toLowerCase()});
         if(data)
         {
             const passwordMatched = await bcrypt.compare(payload.password, data.password);
@@ -61,12 +60,15 @@ export async function POST(request)
         }
     }
     else{
-        if (typeof payload.email !== "string" || typeof payload.phone !== "string" || typeof payload.password !== "string") {
-            return NextResponse.json({ success: false, message: "Email, phone, and password are required." }, { status: 400 });
+        const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || typeof payload.phone !== "string" || typeof payload.password !== "string") {
+            return NextResponse.json({ success: false, message: "Valid email, phone, and password are required.", fieldErrors: {
+                ...(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? { email: "Provide a valid email address." } : {}),
+            } }, { status: 400 });
         }
         const accountFields = {
             name: payload.name,
-            email: payload.email,
+            email,
             phone: payload.phone,
             city: payload.city,
             address: payload.address,
@@ -77,8 +79,9 @@ export async function POST(request)
 
         if(user)
         {
-            message = 'Restaurant already exists.';
-            success = false;
+            const field = user.email === accountFields.email ? "email" : "phone";
+            message = field === "email" ? "Email address already used." : "Phone number already used.";
+            return NextResponse.json({ success: false, message, fieldErrors: { [field]: message } }, { status: 409 });
         }
         else{
             accountFields.password = await bcrypt.hash(payload.password, 10);

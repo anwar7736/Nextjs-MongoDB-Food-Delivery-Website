@@ -1,6 +1,6 @@
 "use client";
 import { CartContext } from "@/app/contexts/CartContext";
-import { session, session_destroy } from "@/app/helpers/SessionHelper";
+import { session } from "@/app/helpers/SessionHelper";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
@@ -36,27 +36,22 @@ const Explore = () => {
   }
   const addToCart = (item) => {
     setIsDisabled(true);
-    const cartItem = { ...item, quantity: 1 };
-    if (cart.length > 0) {
-      if (cart[0].restaurant_id != item.restaurant_id) {
-        session_destroy('cart');
-      }
-
-      const cartItems = session('cart');
-      const index = cartItems.findIndex(cart => cart._id == item._id);
-      if (index != -1) {
-        cartItems[index].quantity++;
-      }
-      else {
-        cartItems.push(cartItem);
-      }
-
-      session('cart', cartItems);
+    const cartItem = {
+      ...item,
+      restaurant_id: item.restaurant_id || _id,
+      restaurant_name: restaurantDetails?.name || "Restaurant",
+      quantity: 1,
+    };
+    const cartItems = session('cart') || [];
+    const index = cartItems.findIndex((cart) => cart._id === item._id);
+    if (index !== -1) {
+      cartItems[index].quantity = Math.min(99, Number(cartItems[index].quantity) + 1);
     }
     else {
-      session('cart', [cartItem]);
+      cartItems.push(cartItem);
     }
-    setCart(session('cart'));
+    session('cart', cartItems);
+    setCart(cartItems);
     setIsDisabled(false);
     toast.success("Item added to cart.");
   }

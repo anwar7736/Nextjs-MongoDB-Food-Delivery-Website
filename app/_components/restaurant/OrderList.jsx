@@ -5,6 +5,7 @@ import InvoiceModal from "@/app/_components/order/InvoiceModal";
 import Swal from "sweetalert2";
 import Link from "next/link";
 import { toast } from "react-toastify";
+import OrderStatusControl from "@/app/_components/order/OrderStatusControl";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
@@ -34,6 +35,11 @@ const OrderList = () => {
       if (!response.ok || !result.success || !result.data?.[0]) {
         toast.error(result.message || "Unable to load this order.");
         return;
+      }
+      const updateOrderStatus = (id, status) => {
+        setOrders((items) => items.map((item) =>
+          item._id === id ? { ...item, status: [status] } : item
+        ));
       }
       setOrder(result.data[0]);
       setModalOpen(true);
@@ -164,6 +170,12 @@ const OrderList = () => {
                         className={`bg-black p-2 text-white rounded ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
                           }`}
                          onClick={() => showInvoice(order?._id)}>View</button>
+                      <OrderStatusControl
+                        orderId={order._id}
+                        accountType="restaurant"
+                        currentStatus={order.status?.[0]}
+                        onUpdated={updateOrderStatus}
+                      />
                       &nbsp;
                       <Link href={`/restaurant/order/edit/${order?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
                       &nbsp;
@@ -199,6 +211,12 @@ const OrderList = () => {
               </div>
               <div className="order-dashboard-card-actions">
                 <button disabled={isDisabled} onClick={() => showInvoice(order._id)}>View</button>
+                <OrderStatusControl
+                  orderId={order._id}
+                  accountType="restaurant"
+                  currentStatus={order.status?.[0]}
+                  onUpdated={updateOrderStatus}
+                />
                 <Link href={`/restaurant/order/edit/${order._id}`}>Edit</Link>
                 <button disabled={isDisabled} onClick={() => deleteItem(order._id)}>Delete</button>
               </div>

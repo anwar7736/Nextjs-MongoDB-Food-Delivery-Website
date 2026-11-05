@@ -6,6 +6,7 @@ import ValidationError from "@/app/_components/ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 import withAuth from "@/app/hoc/withAuth";
 import { useEffect, useState } from "react";
+import { ORDER_STATUS_TRANSITIONS } from "@/app/lib/orderStatus";
 const EditOrder = () => {
     const params = useParams();
     const router = useRouter();
@@ -265,7 +266,10 @@ const EditOrder = () => {
                             <select className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="status_id" value={watch("status_id") || ""} {...register("status_id", { required: 'This field is required.' })} >
                                 <option value="">Select Any Status</option>
                                 {
-                                    statuses.map(status => (
+                                    statuses.filter((status) =>
+                                        status.name === currentOrder?.status?.name ||
+                                        ORDER_STATUS_TRANSITIONS.restaurant[currentOrder?.status?.name]?.includes(status.name)
+                                    ).map(status => (
                                         <option key={status._id} value={status._id}>{status.name}</option>
                                     ))
                                 }

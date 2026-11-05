@@ -18,18 +18,27 @@ export async function PUT(request, { params }) {
     const fields = {
         name: payload.name,
         phone: payload.phone,
+        email: typeof payload.email === "string" ? payload.email.trim().toLowerCase() : undefined,
         address: payload.address,
     };
     const update = Object.fromEntries(
         Object.entries(fields).filter(([, value]) => typeof value === "string")
     );
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email || "");
+    if (!validEmail) {
+        return NextResponse.json({ success: false, data, message: "Provide a valid email address.", fieldErrors: { email: "Provide a valid email address." } }, { status: 400 });
+    }
     let user = await userSchema.findOne({ phone: fields.phone, _id: { $ne: id } });
     if (user) {
         success = false;
         message = 'Phone number already used.';
+        return NextResponse.json({ success, data, message, fieldErrors: { phone: message } }, { status: 409 });
     }
-
     else {
+        const existingEmail = await userSchema.findOne({ email: fields.email, _id: { $ne: id } });
+        if (existingEmail) {
+            return NextResponse.json({ success: false, data, message: "Email address already used.", fieldErrors: { email: "Email address already used." } }, { status: 409 });
+        }
         user = await userSchema.findById(id);
         if (!user) {
             success = false;

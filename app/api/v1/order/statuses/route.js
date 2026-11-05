@@ -1,5 +1,6 @@
 import { mongoDB_connect } from "@/app/helpers/helper";
-import { DEFAULT_ORDER_STATUS_ID, orderStatusSchema } from "@/app/models/orderStatusModel";
+import { orderStatusSchema } from "@/app/models/orderStatusModel";
+import { ORDER_STATUS_SEEDS } from "@/app/lib/orderStatus";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -8,21 +9,14 @@ export async function GET(request)
 {
     try {
         await mongoDB_connect();
-        let data = await orderStatusSchema.find().sort({ name: 1 });
-        if (data.length === 0) {
-            const defaultStatus = await orderStatusSchema.findOneAndUpdate(
-                { _id: DEFAULT_ORDER_STATUS_ID },
-                {
-                    $setOnInsert: {
-                        name: "Pending",
-                        color: "#f59e0b",
-                        status: 1,
-                    },
-                },
+        await Promise.all(ORDER_STATUS_SEEDS.map((status) =>
+            orderStatusSchema.findOneAndUpdate(
+                { _id: status._id },
+                { $setOnInsert: status },
                 { new: true, upsert: true, setDefaultsOnInsert: true }
-            );
-            data = [defaultStatus];
-        }
+            )
+        ));
+        const data = await orderStatusSchema.find().sort({ name: 1 });
 
         return NextResponse.json({ success: true, data });
     } catch (error) {

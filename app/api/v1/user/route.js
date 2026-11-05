@@ -12,16 +12,22 @@ export async function POST(request)
     if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
         return NextResponse.json({ success: false, message: "Invalid request." }, { status: 400 });
     }
+    const email = typeof payload.email === "string" ? payload.email.trim().toLowerCase() : "";
     let success = false;
     let data = [];
     let message = "";
     if(payload.login)
     {
-        if (typeof payload.phone !== "string" || typeof payload.password !== "string") {
-            return NextResponse.json({ success: false, message: "Phone and password are required." }, { status: 400 });
+        const identifier = typeof payload.identifier === "string"
+            ? payload.identifier.trim()
+            : typeof payload.phone === "string" ? payload.phone.trim() : "";
+        if (!identifier || typeof payload.password !== "string") {
+            return NextResponse.json({ success: false, message: "Email or phone and password are required." }, { status: 400 });
         }
-        delete payload.login;
-        data = await userSchema.findOne({phone:payload.phone});
+        const accountQuery = identifier.includes("@")
+            ? { email: identifier.toLowerCase() }
+            : { phone: identifier };
+        data = await userSchema.findOne(accountQuery);
         if(data)
         {
             const passwordMatched = await bcrypt.compare(payload.password, data.password);
@@ -48,19 +54,26 @@ export async function POST(request)
         }
     }
     else{
-        if (typeof payload.phone !== "string" || typeof payload.password !== "string") {
-            return NextResponse.json({ success: false, message: "Phone and password are required." }, { status: 400 });
+        if (typeof payload.phone !== "string" || typeof payload.password !== "string" ||
+            typeof payload.name !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return NextResponse.json({ success: false, message: "Name, valid email, phone, and password are required.", fieldErrors: {
+                ...(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? { email: "Provide a valid email address." } : {}),
+            } }, { status: 400 });
         }
         const accountFields = {
             name: payload.name,
             phone: payload.phone,
+            email,
             address: payload.address,
         };
-        const user = await userSchema.findOne({ phone: accountFields.phone });
+        const user = await userSchema.findOne({
+            $or: [{ phone: accountFields.phone }, { email: accountFields.email }],
+        });
         if(user)
         {
-            message = 'Account already exists.';
-            success = false;
+            const field = user.email === accountFields.email ? "email" : "phone";
+            message = field === "email" ? "Email address already used." : "Phone number already used.";
+            return NextResponse.json({ success: false, message, fieldErrors: { [field]: message } }, { status: 409 });
         }
         else{
             accountFields.password = await bcrypt.hash(payload.password, 10);

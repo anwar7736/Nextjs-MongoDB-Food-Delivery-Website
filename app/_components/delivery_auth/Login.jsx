@@ -9,12 +9,14 @@ import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 import AuthenticatorCode from "../auth/AuthenticatorCode";
+import PasswordRecovery from "../auth/PasswordRecovery";
 const Login = () => {
     const { auth, setAuth } = useContext(AuthContext);
     const { user, setUser } = useContext(UserAuthContext);
     const { delivery, setDelivery } = useContext(DeliveryAuthContext);
     const [isDisabled, setIsDisabled] = useState(false);
     const [challenge, setChallenge] = useState("");
+    const [isRecovering, setIsRecovering] = useState(false);
     const router = useRouter();
     const {
         register,
@@ -81,16 +83,18 @@ const Login = () => {
     }
     return (
         <div className="auth-page" align="center">
-            {challenge ? <AuthenticatorCode onVerify={verifyLogin} onCancel={() => setChallenge("")} /> : <>
+            {challenge ? <AuthenticatorCode onVerify={verifyLogin} onCancel={() => setChallenge("")} /> : isRecovering ? (
+                <PasswordRecovery accountType="delivery" onClose={() => setIsRecovering(false)} />
+            ) : <>
             <h2 className="font-bold">Delivery Partner Login</h2>
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(loginFormHandler)}>
                     <div className="mb-4">
-                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="phone">
-                            Phone
+                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="identifier">
+                            Email or phone
                         </label>
-                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="phone" placeholder="Phone" {...register("phone", { required: 'This field is required' })} />
-                        {errors.phone && <ValidationError message={errors.phone.message} />}
+                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="identifier" type="text" autoComplete="username" placeholder="Email or phone" {...register("identifier", { required: 'Enter your email or phone.' })} />
+                        {errors.identifier && <ValidationError message={errors.identifier.message} />}
 
                     </div>
                     <div className="mb-6">
@@ -108,7 +112,7 @@ const Login = () => {
                             type="submit">
                             Login
                         </button>
-                        <button className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" type="button">
+                        <button className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" type="button" onClick={() => setIsRecovering(true)}>
                             Forgot Password?
                         </button>
                     </div>

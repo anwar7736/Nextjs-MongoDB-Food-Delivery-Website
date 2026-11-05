@@ -23,6 +23,7 @@ const Profile = () => {
         defaultValues:{
             name: auth?.name,
             phone: auth?.phone,
+            email: auth?.email,
             city: auth?.city,
             address: auth?.address,
         }
@@ -78,6 +79,16 @@ const Profile = () => {
                         </label>
                         <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", { required: 'Provide a valid phone number.', pattern: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/ })} />
                         {errors.phone && <ValidationError message={errors.phone.message} />}
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
+                            Email
+                        </label>
+                        <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" autoComplete="email" placeholder="Email" {...register("email", {
+                            required: "Provide a valid email address.",
+                            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Provide a valid email address." }
+                        })} />
+                        {errors.email && <ValidationError message={errors.email.message} />}
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="city">

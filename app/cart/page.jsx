@@ -20,6 +20,16 @@ const Cart = () => {
     useEffect(() => {
         setSubTotal(calculateSubTotal());
     }, [cart]);
+    const restaurantGroups = cart.reduce((groups, item) => {
+        const key = item.restaurant_id || "restaurant";
+        if (!groups[key]) {
+            groups[key] = { name: item.restaurant_name || "Restaurant", total: 0, items: 0 };
+        }
+        groups[key].total += Number(item.price) * Number(item.quantity);
+        groups[key].items += Number(item.quantity);
+        return groups;
+    }, {});
+    const restaurantCount = Object.keys(restaurantGroups).length;
 
     const removeFromCart = (id) => {
         const cartItems = cart.filter(item => item._id !== id);
@@ -98,6 +108,15 @@ const Cart = () => {
                         <div align="left" className="mt-5 ml-3">
                             <p><b>Total Items:</b> {cart.reduce((total, item) => total + item.quantity, 0)}</p>
                             <p><b>Sub Total:</b> Tk {subTotal.toFixed(2)}</p>
+                            <p><b>Restaurants:</b> {restaurantCount}</p>
+                            <p><b>Estimated delivery:</b> Tk {(restaurantCount * 50).toFixed(2)}</p>
+                            <p><b>Estimated total:</b> Tk {(subTotal + restaurantCount * 50).toFixed(2)}</p>
+                            <div className="mt-3">
+                                <b>Restaurant summary</b>
+                                {Object.entries(restaurantGroups).map(([id, group]) => (
+                                    <p key={id}>{group.name}: {group.items} item(s) · Tk {group.total.toFixed(2)}</p>
+                                ))}
+                            </div>
                         </div>
                         <div align="left" className="mt-5 ml-3">
                             <button onClick={() => orderNow()} className="order-now-btn">Order Now</button>

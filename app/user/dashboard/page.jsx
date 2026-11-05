@@ -46,11 +46,38 @@ const Dashboard = () => {
   useEffect(() => {
     getOrderList();
   }, []);
+  const checkoutSummaries = Object.values(orders.reduce((groups, currentOrder) => {
+    const key = currentOrder.checkout_id || currentOrder._id;
+    if (!groups[key]) {
+      groups[key] = {
+        id: key,
+        total: Number(currentOrder.checkout_total ?? currentOrder.final_total ?? 0),
+        orderCount: Number(currentOrder.checkout_order_count ?? 1),
+        restaurants: [],
+      };
+    }
+    const restaurantName = currentOrder.restaurant?.[0]?.name;
+    if (restaurantName && !groups[key].restaurants.includes(restaurantName)) {
+      groups[key].restaurants.push(restaurantName);
+    }
+    return groups;
+  }, {}));
   return (
     <div align="center">
       <title>Restaurant Dashboard</title>
       <div className="no-print">
         <h4 className="m-3">All Order List</h4>
+        {checkoutSummaries.length > 0 && (
+          <section className="mx-3 mb-4 rounded-lg bg-green-50 p-4 text-left" aria-label="Checkout summaries">
+            <h5 className="font-bold">Checkout summaries</h5>
+            {checkoutSummaries.map((summary) => (
+              <p key={summary.id}>
+                {summary.orderCount} restaurant order(s) · {summary.restaurants.join(", ") || "Restaurant"} ·
+                &nbsp;Total Tk {summary.total.toFixed(2)}
+              </p>
+            ))}
+          </section>
+        )}
 
         <div className="relative hidden overflow-x-auto shadow-md sm:block sm:rounded-lg">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">

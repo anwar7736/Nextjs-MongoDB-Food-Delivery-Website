@@ -18,18 +18,20 @@ const SignUp = () => {
     register,
     handleSubmit,
     watch,
+    setError,
     formState: { errors },
   } = useForm();
 
   const signupFormHandler = async (data) => {
     setIsDisabled(true);
     data.login = false;
-    let res = await fetch("api/v1/delivery", {
+    try {
+    const response = await fetch("/api/v1/delivery", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data)
     });
-
-    res = await res.json();
+    const res = await response.json();
     if(res.success)
     {
         delete res.data.password;
@@ -44,9 +46,15 @@ const SignUp = () => {
         toast.success(res.message);
     }
     else{
+        Object.entries(res.fieldErrors || {}).forEach(([field, message]) => {
+          setError(field, { type: "server", message });
+        });
         setIsDisabled(false);
         toast.error(res.message);
-        console.log(res);
+    }
+    } catch {
+      setIsDisabled(false);
+      toast.error("Unable to reach the registration service.");
     }
   }
 
@@ -69,8 +77,21 @@ const SignUp = () => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="phone">
               Phone
             </label>
-            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", { required: 'Provide a valid phone number.', pattern: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/ } ) } />
+            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="phone" type="text" placeholder="Phone" {...register("phone", {
+              required: 'Provide a valid phone number.',
+              pattern: { value: /^([+]{1}[8]{2}|0088)?(01)[3-9]\d{8}$/, message: 'Provide a valid phone number.' }
+            })} />
             {errors.phone && <ValidationError message={errors.phone.message} />}
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="email">
+              Email
+            </label>
+            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" autoComplete="email" placeholder="Email" {...register("email", {
+              required: 'Provide a valid email address.',
+              pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: 'Provide a valid email address.' }
+            })} />
+            {errors.email && <ValidationError message={errors.email.message} />}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="city">
@@ -118,7 +139,8 @@ const SignUp = () => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="cpassword">
               Re-type Password
             </label>
-            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="cpassword" type="password" placeholder="******************" {...register("cpassword", {required:'This field is required.'})}/>
+            <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="cpassword" type="password" placeholder="******************" {...register("cpassword", {required:'This field is required.', validate: (value) => value === watch("password") || "Both passwords must match."})}/>
+            {errors.cpassword && <ValidationError message={errors.cpassword.message} />}
           </div>
           <div className="flex items-center justify-between">
             <button 

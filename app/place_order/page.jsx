@@ -1,7 +1,7 @@
 "use client";
 import { useContext, useEffect, useState } from "react";
 import { CartContext } from "../contexts/CartContext";
-import { isUserAuth, user_auth } from "../helpers/helper";
+import { user_auth } from "../helpers/helper";
 import Link from "next/link";
 import { session, session_destroy } from "../helpers/SessionHelper";
 import withUserAuth from "../hoc/withUserAuth";
@@ -13,8 +13,17 @@ const PlaceOrder = () => {
     const router = useRouter();
     const { cart, setCart } = useContext(CartContext);
     const [subTotal, setSubTotal] = useState(0);
-    const [shippingCharge, setShippingCharge] = useState(50);
     const [isDisabled, setIsDisabled] = useState(false);
+    const restaurantGroups = cart.reduce((groups, item) => {
+        const key = item.restaurant_id || "restaurant";
+        if (!groups[key]) {
+            groups[key] = { name: item.restaurant_name || "Restaurant", total: 0, items: 0 };
+        }
+        groups[key].total += Number(item.price) * Number(item.quantity);
+        groups[key].items += Number(item.quantity);
+        return groups;
+    }, {});
+    const restaurantCount = Object.keys(restaurantGroups).length;
     const calculateSubTotal = () => {
         const total = cart.reduce((total, item) => total + (item.quantity * item.price), 0);
         return total;
@@ -64,9 +73,7 @@ const PlaceOrder = () => {
         setIsDisabled(true);
         let data = {
             "user_id": user_auth()._id,
-            "restaurant_id": cart[0].restaurant_id,
             "total": subTotal,
-            "shipping_charge": shippingCharge,
             "items": []
         };
 
@@ -75,6 +82,7 @@ const PlaceOrder = () => {
                 "id": item._id,
                 "quantity": item.quantity,
                 "price": item.price,
+                "restaurant_id": item.restaurant_id,
             })
         });
 
@@ -143,8 +151,15 @@ const PlaceOrder = () => {
                             <div align="left" className="">
                                 <p><b>Total Items:</b> {cart.reduce((total, item) => total + item.quantity, 0)}</p>
                                 <p><b>Sub Total:</b> Tk {subTotal.toFixed(2)}</p>
-                                <p><b>Shipping Charge:</b> Tk {shippingCharge.toFixed(2)}</p>
-                                <p><b>Total Amount:</b> Tk {(subTotal + shippingCharge).toFixed(2)}</p>
+                                <p><b>Restaurants:</b> {restaurantCount}</p>
+                                <p><b>Shipping Charge:</b> Tk {(restaurantCount * 50).toFixed(2)}</p>
+                                <p><b>Total Amount:</b> Tk {(subTotal + restaurantCount * 50).toFixed(2)}</p>
+                                <div className="mt-3">
+                                    <b>Restaurant summary</b>
+                                    {Object.entries(restaurantGroups).map(([id, group]) => (
+                                        <p key={id}>{group.name}: {group.items} item(s) · Tk {group.total.toFixed(2)} + Tk 50 delivery</p>
+                                    ))}
+                                </div>
                             </div>
                             <div align="left" className=" mt-3">
                                 <button 

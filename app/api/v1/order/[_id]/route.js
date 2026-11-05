@@ -9,6 +9,8 @@ import { foodSchema } from "@/app/models/foodModel";
 import { userSchema } from "@/app/models/userModel";
 import { deliverySchema } from "@/app/models/deliveryModel";
 import { restaurantSchema } from "@/app/models/restaurantModel";
+import { orderStatusSchema } from "@/app/models/orderStatusModel";
+import { canTransitionOrderStatus } from "@/app/lib/orderStatus";
 
 export async function GET(request, { params }) {
   const { _id } = await params;
@@ -198,8 +200,19 @@ export async function PUT(request, { params }) {
       final_total: total + shippingCharge,
     };
     const statusChanged = String(oldOrder.status_id) !== String(payload.status_id);
-    if (statusChanged && mongoose.Types.ObjectId.isValid(payload.status_id)) {
-      orderInput.status_id = payload.status_id;
+    if (statusChanged) {
+      if (!mongoose.Types.ObjectId.isValid(payload.status_id)) {
+        return NextResponse.json({ success: false, message: "Select a valid order status." }, { status: 400 });
+      }
+      const [currentStatus, nextStatus] = await Promise.all([
+        orderStatusSchema.findById(oldOrder.status_id),
+        orderStatusSchema.findById(payload.status_id),
+      ]);
+      if (!currentStatus || !nextStatus ||
+          !canTransitionOrderStatus("restaurant", currentStatus.name, nextStatus.name)) {
+        return NextResponse.json({ success: false, message: "That order status change is not allowed." }, { status: 400 });
+      }
+      orderInput.status_id = nextStatus._id;
     }
 
     await orderSchema.updateOne({ _id, restaurant_id: session.id }, { $set: orderInput });
@@ -217,6 +230,62 @@ export async function PUT(request, { params }) {
   } catch (error) {
     console.error("Order update failed:", error.message);
     return NextResponse.json({ success: false, message: "Unable to update this order." }, { status: 500 });
+  }
+}
+
+export async function PATCH(request, { params }) {
+  const { _id } = await params;
+  const session = await verifyAuthSession(request.cookies.get("auth_session")?.value || "");
+  if (!session || !["restaurant", "delivery"].includes(session.type)) {
+    return NextResponse.json({ success: false, message: "Restaurant or delivery partner sign-in is required." }, { status: 401 });
+  }
+  if (!mongoose.Types.ObjectId.isValid(_id)) {
+    return NextResponse.json({ success: false, message: "Invalid order." }, { status: 400 });
+  }
+
+  try {
+    await mongoDB_connect();
+    const payload = await request.json();
+    if (!mongoose.Types.ObjectId.isValid(payload.status_id)) {
+      return NextResponse.json({ success: false, message: "Select a valid order status." }, { status: 400 });
+    }
+
+    const ownershipField = session.type === "restaurant" ? "restaurant_id" : "delivery_partner_id";
+    const order = await orderSchema.findOne({ _id, [ownershipField]: session.id });
+    if (!order) {
+      return NextResponse.json({ success: false, message: "Order not found." }, { status: 404 });
+    }
+    const [currentStatus, nextStatus] = await Promise.all([
+      orderStatusSchema.findById(order.status_id),
+      orderStatusSchema.findById(payload.status_id),
+    ]);
+    if (!currentStatus || !nextStatus ||
+        !canTransitionOrderStatus(session.type, currentStatus.name, nextStatus.name)) {
+      return NextResponse.json({ success: false, message: "That order status change is not allowed." }, { status: 400 });
+    }
+
+    const updated = await orderSchema.updateOne({
+      _id,
+      [ownershipField]: session.id,
+      status_id: order.status_id,
+    }, { $set: { status_id: nextStatus._id } });
+    if (updated.modifiedCount === 0) {
+      return NextResponse.json({ success: false, message: "This order status has changed. Refresh and try again." }, { status: 409 });
+    }
+
+    await new orderStatusLogSchema({
+      order_id: order._id,
+      status_id: nextStatus._id,
+      date: new Date(),
+    }).save();
+    return NextResponse.json({
+      success: true,
+      message: "Order status updated.",
+      data: { _id: nextStatus._id, name: nextStatus.name, color: nextStatus.color },
+    });
+  } catch (error) {
+    console.error("Order status update failed:", error.message);
+    return NextResponse.json({ success: false, message: "Unable to update this order status." }, { status: 500 });
   }
 }
 

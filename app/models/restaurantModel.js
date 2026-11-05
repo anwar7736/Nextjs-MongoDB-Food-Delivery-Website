@@ -2,7 +2,7 @@ const { default: mongoose } = require("mongoose");
 
 const restaurantModel = new mongoose.Schema({
     "name":String,
-    "email":String,
+    "email":{type:String, lowercase:true, trim:true, unique:true, sparse:true},
     "phone":String,
     "password":String,
     "city":String,

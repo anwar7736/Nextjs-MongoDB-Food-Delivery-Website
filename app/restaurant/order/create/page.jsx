@@ -170,7 +170,9 @@ const PlaceOrder = () => {
             if (!response.ok || !result.success) {
                 throw new Error(result.message || "Unable to load order statuses.");
             }
-            setStatuses(result.data || []);
+            setStatuses((result.data || []).filter((status) =>
+                ["Pending", "Preparing"].includes(status.name)
+            ));
         } catch (error) {
             console.error("Order status loading failed:", error);
             toast.error(error.message || "Unable to load order statuses.");

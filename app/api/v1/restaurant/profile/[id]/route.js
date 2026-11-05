@@ -18,7 +18,7 @@ export async function PUT(request, { params }) {
     const fields = {
         name: payload.name,
         phone: payload.phone,
-        email: payload.email,
+        email: typeof payload.email === "string" ? payload.email.trim().toLowerCase() : undefined,
         city: payload.city,
         address: payload.address,
     };
@@ -35,10 +35,13 @@ export async function PUT(request, { params }) {
     else if (emailExistence) {
         success = false;
         message = 'Email address already used.';
-        return NextResponse.json({ success, data, message });
+        return NextResponse.json({ success, data, message, fieldErrors: { email: message } }, { status: 409 });
     }
 
     else {
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email || "")) {
+            return NextResponse.json({ success: false, data, message: "Provide a valid email address.", fieldErrors: { email: "Provide a valid email address." } }, { status: 400 });
+        }
         let user = await restaurantSchema.findById(id);
         if (!user) {
             success = false;

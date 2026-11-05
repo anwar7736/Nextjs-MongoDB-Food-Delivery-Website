@@ -9,12 +9,14 @@ import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
 import AuthenticatorCode from "./AuthenticatorCode";
+import PasswordRecovery from "./PasswordRecovery";
 const Login = () => {
     const {auth, setAuth} = useContext(AuthContext);
     const {user, setUser} = useContext(UserAuthContext);
     const {delivery, setDelivery} = useContext(DeliveryAuthContext);
     const [isDisabled, setIsDisabled] = useState(false);
     const [challenge, setChallenge] = useState("");
+    const [isRecovering, setIsRecovering] = useState(false);
     const router = useRouter();
     const {
         register,
@@ -81,7 +83,9 @@ const Login = () => {
     }
     return (
         <div className="auth-page" align="center">
-            {challenge ? <AuthenticatorCode onVerify={verifyLogin} onCancel={() => setChallenge("")} /> : <>
+            {challenge ? <AuthenticatorCode onVerify={verifyLogin} onCancel={() => setChallenge("")} /> : isRecovering ? (
+                <PasswordRecovery accountType="restaurant" onClose={() => setIsRecovering(false)} />
+            ) : <>
             <h2 className="font-bold">Restaurant Login</h2>
             <div className="w-full max-w-xs">
                 <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit(loginFormHandler)}>
@@ -109,7 +113,7 @@ const Login = () => {
                         type="submit">
                             Login
                         </button>
-                        <button className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" type="button">
+                        <button className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" type="button" onClick={() => setIsRecovering(true)}>
                             Forgot Password?
                         </button>
                     </div>

@@ -4,6 +4,7 @@ import withDeliveryAuth from "@/app/hoc/withDeliveryAuth";
 import { useState, useEffect } from "react";
 import InvoiceModal from "@/app/_components/order/InvoiceModal";
 import { toast } from "react-toastify";
+import OrderStatusControl from "@/app/_components/order/OrderStatusControl";
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -35,6 +36,11 @@ const Dashboard = () => {
       if (!response.ok || !result.success || !result.data?.[0]) {
         toast.error(result.message || "Unable to load this order.");
         return;
+      }
+      const updateOrderStatus = (id, status) => {
+        setOrders((items) => items.map((item) =>
+          item._id === id ? { ...item, status: [status] } : item
+        ));
       }
       setOrder(result.data[0]);
       setModalOpen(true);
@@ -129,6 +135,12 @@ const Dashboard = () => {
                         className={`bg-black p-2 text-white rounded ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
                           }`}
                         onClick={() => showInvoice(order?._id)}>View</button>
+                      <OrderStatusControl
+                        orderId={order._id}
+                        accountType="delivery"
+                        currentStatus={order.status?.[0]}
+                        onUpdated={updateOrderStatus}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -156,6 +168,12 @@ const Dashboard = () => {
               </div>
               <div className="order-dashboard-card-actions">
                 <button disabled={isDisabled} onClick={() => showInvoice(order._id)}>View order</button>
+                <OrderStatusControl
+                  orderId={order._id}
+                  accountType="delivery"
+                  currentStatus={order.status?.[0]}
+                  onUpdated={updateOrderStatus}
+                />
               </div>
             </article>
           ))}
