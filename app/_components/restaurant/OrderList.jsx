@@ -178,7 +178,17 @@ const OrderList = () => {
                         onUpdated={updateOrderStatus}
                       />
                       &nbsp;
-                      <Link href={`/restaurant/order/edit/${order?._id}`} className="bg-green-600 p-2 text-white rounded">Edit</Link>
+                      <Link
+                        href={`/restaurant/order/edit/${order?._id}`}
+                        aria-disabled={isDisabled}
+                        tabIndex={isDisabled ? -1 : undefined}
+                        className={`bg-green-600 p-2 text-white rounded ${isDisabled ? "pointer-events-none cursor-not-allowed opacity-50" : ""}`}
+                        onClick={(event) => {
+                          if (isDisabled) event.preventDefault();
+                        }}
+                      >
+                        Edit
+                      </Link>
                       &nbsp;
                       <button
                         disabled={isDisabled}
@@ -218,7 +228,17 @@ const OrderList = () => {
                   currentStatus={order.status?.[0]}
                   onUpdated={updateOrderStatus}
                 />
-                <Link href={`/restaurant/order/edit/${order._id}`}>Edit</Link>
+                <Link
+                  href={`/restaurant/order/edit/${order._id}`}
+                  aria-disabled={isDisabled}
+                  tabIndex={isDisabled ? -1 : undefined}
+                  className={isDisabled ? "pointer-events-none cursor-not-allowed opacity-50" : ""}
+                  onClick={(event) => {
+                    if (isDisabled) event.preventDefault();
+                  }}
+                >
+                  Edit
+                </Link>
                 <button disabled={isDisabled} onClick={() => deleteItem(order._id)}>Delete</button>
               </div>
             </article>
