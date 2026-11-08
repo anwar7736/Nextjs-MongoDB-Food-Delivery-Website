@@ -495,13 +495,21 @@ export async function handleAssistantRequest(request, { requireN8nApiKey = false
     }
 
     if (!requireN8nApiKey && process.env.N8N_WEBHOOK_URL) {
+      const webhookAuthToken = process.env.N8N_API_KEY;
+      if (!webhookAuthToken || webhookAuthToken.length < 32) {
+        return jsonResponse(false, "Configure N8N_API_KEY with at least 32 characters to call the protected n8n webhook.", 503);
+      }
+
       const webhookUrl = new URL(process.env.N8N_WEBHOOK_URL);
       if (!["https:", "http:"].includes(webhookUrl.protocol)) {
         return jsonResponse(false, "The n8n webhook URL must use HTTP or HTTPS.", 500);
       }
       const webhookResponse = await fetch(webhookUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${webhookAuthToken}`,
+        },
         body: JSON.stringify(payload),
         cache: "no-store",
         signal: AbortSignal.timeout(20_000),

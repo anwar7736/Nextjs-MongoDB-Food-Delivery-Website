@@ -10,6 +10,7 @@ import DeliveryAuthContextProvider from "./contexts/DeliveryAuthContext";
 import PWARegister from "./_components/PWARegister";
 import SupportWidget from "./_components/SupportWidget";
 import ScrollToTop from "./_components/layouts/ScrollToTop";
+import RouteProgress from "./_components/layouts/RouteProgress";
 import { ToastContainer } from "react-toastify";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -47,6 +48,7 @@ export default function RootLayout({ children }) {
             <AuthContextProvider>
               <DeliveryAuthContextProvider>
                 <PWARegister />
+                <RouteProgress />
                 <Header />
                 {children}
                 <ToastContainer />
