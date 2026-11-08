@@ -24,3 +24,30 @@ export async function sendPasswordResetCode(email, code) {
     throw new Error(`Resend email request failed (${response.status}): ${details}`);
   }
 }
+
+export async function sendEmailVerificationCode(email, code) {
+  const { RESEND_API_KEY, EMAIL_FROM } = process.env;
+  if (!RESEND_API_KEY || !EMAIL_FROM) {
+    throw new Error("RESEND_API_KEY and EMAIL_FROM must be configured.");
+  }
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: EMAIL_FROM,
+      to: [email],
+      subject: "Verify your FoodFlow AI email",
+      text: `Your email verification code is ${code}. It expires in 10 minutes.`,
+      html: `<p>Your email verification code is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`,
+    }),
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Resend email request failed (${response.status}): ${details}`);
+  }
+}

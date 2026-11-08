@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createLoginChallenge, publicAccount, setAuthSessionCookie } from "@/app/lib/authenticator";
 import { verifyAuthSession } from "@/app/lib/session";
+import { consumeEmailVerificationCode } from "@/app/lib/emailVerification";
 
 export async function POST(request)
 {
@@ -76,6 +77,14 @@ export async function POST(request)
             return NextResponse.json({ success: false, message, fieldErrors: { [field]: message } }, { status: 409 });
         }
         else{
+            const verification = await consumeEmailVerificationCode("user", email, payload.emailVerificationCode);
+            if (!verification.success) {
+                return NextResponse.json({
+                    success: false,
+                    message: verification.message,
+                    fieldErrors: { emailVerificationCode: verification.message },
+                }, { status: verification.status });
+            }
             accountFields.password = await bcrypt.hash(payload.password, 10);
             let res = await new userSchema(accountFields);
             res = await res.save();

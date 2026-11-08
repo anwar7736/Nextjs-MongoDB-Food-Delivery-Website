@@ -7,6 +7,7 @@ import { delivery_auth, restaurant_auth, user_auth } from "@/app/helpers/helper"
 import { deleteCookie, setCookie } from "cookies-next";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
+import EmailVerificationField from "@/app/_components/auth/EmailVerificationField";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 const SignUp = () => {
   const router = useRouter();
@@ -19,37 +20,40 @@ const SignUp = () => {
     handleSubmit,
     watch,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm();
 
   const signupFormHandler = async (data) => {
     setIsDisabled(true);
     data.login = false;
-    let response = await fetch("/api/v1/restaurant", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
-    });
-
-    response = await response.json();
-    const res = response;
-    if (res.success) {
-      delete res.data.password;
-      deleteCookie('user_auth');
-      setUser(user_auth());
-      deleteCookie('delivery_auth');
-      setDelivery(delivery_auth());
-      setCookie('restaurant_auth', JSON.stringify(res.data));
-      setAuth(restaurant_auth());
-      router.push("/restaurant/dashboard");
-      toast.success(res.message);
-    }
-    else {
-      Object.entries(res.fieldErrors || {}).forEach(([field, message]) => {
-        setError(field, { type: "server", message });
+    try {
+      const response = await fetch("/api/v1/restaurant", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
       });
+      const res = await response.json();
+      if (res.success) {
+        delete res.data.password;
+        deleteCookie('user_auth');
+        setUser(user_auth());
+        deleteCookie('delivery_auth');
+        setDelivery(delivery_auth());
+        setCookie('restaurant_auth', JSON.stringify(res.data));
+        setAuth(restaurant_auth());
+        router.push("/restaurant/dashboard");
+        toast.success(res.message);
+      } else {
+        Object.entries(res.fieldErrors || {}).forEach(([field, message]) => {
+          setError(field, { type: "server", message });
+        });
+        setIsDisabled(false);
+        toast.error(res.message);
+      }
+    } catch {
       setIsDisabled(false);
-      toast.error(res.message);
+      toast.error("Unable to reach the registration service.");
     }
   }
 
@@ -114,6 +118,14 @@ const SignUp = () => {
             <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline mb-1" id="email" type="email" placeholder="Email" {...register("email", { required: 'Provide a valid email address.' })} />
             {errors.email && <ValidationError message={errors.email.message} />}
           </div>
+          <EmailVerificationField
+            accountType="restaurant"
+            email={watch("email")}
+            register={register}
+            errors={errors}
+            setError={setError}
+            clearErrors={clearErrors}
+          />
           <div className="mb-6">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="password">
               Password

@@ -12,6 +12,12 @@ const OrderList = () => {
   const [order, setOrder] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+
+  const updateOrderStatus = (id, status) => {
+    setOrders((items) => items.map((item) =>
+      item._id === id ? { ...item, status: [status] } : item
+    ));
+  }
   
   const getOrderList = async () => {
     try {
@@ -35,11 +41,6 @@ const OrderList = () => {
       if (!response.ok || !result.success || !result.data?.[0]) {
         toast.error(result.message || "Unable to load this order.");
         return;
-      }
-      const updateOrderStatus = (id, status) => {
-        setOrders((items) => items.map((item) =>
-          item._id === id ? { ...item, status: [status] } : item
-        ));
       }
       setOrder(result.data[0]);
       setModalOpen(true);

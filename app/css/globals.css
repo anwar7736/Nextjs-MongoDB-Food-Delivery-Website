@@ -627,6 +627,229 @@ body {
   animation: support-panel-in 180ms ease-out both;
 }
 
+.support-chat-panel {
+  display: flex;
+  width: min(390px, calc(100vw - 32px));
+  height: min(600px, calc(100dvh - 120px));
+  min-height: 390px;
+  flex-direction: column;
+  background: #f8faf8;
+  color: #17231b;
+}
+
+.support-chat-header {
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 14px 14px 12px;
+  color: #fff;
+  background: #166534;
+}
+
+.support-chat-header > div:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.support-chat-header span {
+  color: #dcfce7;
+}
+
+.support-chat-avatar {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  color: #166534;
+  background: #fff;
+  border-radius: 50%;
+}
+
+.support-chat-avatar svg {
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.support-voice-reply,
+.support-close {
+  flex: 0 0 auto;
+}
+
+.support-voice-reply {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: #dcfce7;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+}
+
+.support-voice-reply.is-active,
+.support-voice-reply:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.support-chat-header .support-close {
+  margin: 0;
+  color: #dcfce7;
+}
+
+.support-chat-messages {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+  padding: 16px 12px;
+  overscroll-behavior: contain;
+}
+
+.support-chat-message {
+  max-width: 88%;
+  padding: 10px 12px;
+  color: #26352b;
+  background: #fff;
+  border: 1px solid #e2e8e3;
+  border-radius: 14px 14px 14px 4px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.support-chat-message.is-user {
+  align-self: flex-end;
+  color: #fff;
+  background: #15803d;
+  border-color: #15803d;
+  border-radius: 14px 14px 4px 14px;
+}
+
+.support-chat-typing {
+  color: #64746a;
+  font-size: 0.76rem;
+}
+
+.support-chat-form {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 12px;
+  background: #fff;
+  border-top: 1px solid #e2e8e3;
+}
+
+.support-chat-form input {
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  color: #17231b;
+  background: #f8faf8;
+  border: 1px solid #dce5dd;
+  border-radius: 999px;
+  outline: none;
+}
+
+.support-chat-form input:focus {
+  border-color: #15803d;
+}
+
+.support-mic-button,
+.support-send-button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+}
+
+.support-mic-button {
+  color: #166534;
+  background: #dcfce7;
+  font-size: 1rem;
+}
+
+.support-mic-button.is-listening {
+  color: #fff;
+  background: #dc2626;
+}
+
+.support-send-button {
+  color: #fff;
+  background: #15803d;
+}
+
+.support-send-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.support-send-button svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.support-chat-contacts {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px 10px;
+  color: #64746a;
+  background: #fff;
+  font-size: 0.74rem;
+}
+
+.support-chat-contacts span {
+  margin-right: auto;
+}
+
+.support-chat-contacts a {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: #64746a;
+  border-radius: 50%;
+}
+
+.support-chat-contacts a:hover {
+  color: #15803d;
+  background: #f1f7f1;
+}
+
+.support-chat-contacts svg {
+  width: 17px;
+  height: 17px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.support-chat-contacts .support-icon-cutout {
+  fill: #fff;
+  stroke: #fff;
+}
+
 .support-panel-header {
   display: flex;
   align-items: flex-start;
@@ -817,6 +1040,12 @@ body {
   .support-launcher {
     width: 62px;
     height: 62px;
+  }
+
+  .support-chat-panel {
+    width: min(390px, calc(100vw - 24px));
+    height: min(620px, calc(100dvh - 100px));
+    min-height: 360px;
   }
 }
 

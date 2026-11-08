@@ -8,6 +8,7 @@ import { deleteCookie, setCookie } from "cookies-next";
 import { AuthContext } from "@/app/contexts/AuthContext";
 import { UserAuthContext } from "@/app/contexts/UserAuthContext";
 import { DeliveryAuthContext } from "@/app/contexts/DeliveryAuthContext";
+import EmailVerificationField from "@/app/_components/auth/EmailVerificationField";
 const SignUp = () => {
   const router = useRouter();
   const {auth, setAuth} = useContext(AuthContext);
@@ -19,6 +20,7 @@ const SignUp = () => {
     handleSubmit,
     watch,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm();
 
@@ -93,6 +95,14 @@ const SignUp = () => {
             })} />
             {errors.email && <ValidationError message={errors.email.message} />}
           </div>
+          <EmailVerificationField
+            accountType="delivery"
+            email={watch("email")}
+            register={register}
+            errors={errors}
+            setError={setError}
+            clearErrors={clearErrors}
+          />
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="city">
               City

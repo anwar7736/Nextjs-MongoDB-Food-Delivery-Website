@@ -1,0 +1,128 @@
+{
+  "name": "FoodFlow Customer Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "foodflow-assistant",
+        "responseMode": "usingRespondToWebhook",
+        "options": {}
+      },
+      "id": "30f3c839-3905-43f4-9df5-2507c70f09a2",
+      "name": "Customer Chat Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        240,
+        300
+      ],
+      "webhookId": "foodflow-customer-assistant"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.body ?? $input.first().json;\nif (!input || typeof input !== 'object' || Array.isArray(input)) {\n  throw new Error('Send a JSON object in the webhook request body.');\n}\nreturn [{ json: { ...input, action: input.action || 'chat' } }];"
+      },
+      "id": "eb005bd6-271f-4f4f-9f4f-444be35b4faa",
+      "name": "Normalize Chat Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://YOUR_FOODFLOW_DOMAIN/api/v1/n8n",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "7eb42339-2fd8-41d9-934c-7c09a5469191",
+      "name": "FoodFlow Recommendations and Orders",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "FoodFlow n8n API Key"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "b4a75d31-f019-484e-8a3d-00397ba8b33c",
+      "name": "Reply to Customer",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        300
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Customer Chat Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Chat Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Chat Request": {
+      "main": [
+        [
+          {
+            "node": "FoodFlow Recommendations and Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FoodFlow Recommendations and Orders": {
+      "main": [
+        [
+          {
+            "node": "Reply to Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1d235f97-a210-4d97-aed6-73919cfc456c",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

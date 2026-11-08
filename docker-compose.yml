@@ -5,17 +5,24 @@ services:
       dockerfile: Dockerfile
     environment:
       NODE_ENV: production
-      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/foodflow}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/foodflow?replicaSet=rs0}
       TOTP_ENCRYPTION_KEY: ${TOTP_ENCRYPTION_KEY:?Set TOTP_ENCRYPTION_KEY in .env}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      N8N_API_KEY: ${N8N_API_KEY:-}
+      N8N_WEBHOOK_URL: ${N8N_WEBHOOK_URL:-}
     ports:
       - "3000:3000"
     depends_on:
       mongo:
         condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   mongo:
     image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -24,6 +31,27 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      mongo:
+        condition: service_healthy
+    entrypoint: ["mongosh", "--host", "mongo:27017", "--quiet", "--eval"]
+    command:
+      - |
+        try {
+          rs.status();
+        } catch (error) {
+          rs.initiate({ _id: "rs0", members: [{ _id: 0, host: "mongo:27017" }] });
+        }
+        let isPrimary = false;
+        for (let attempt = 0; attempt < 30 && !isPrimary; attempt += 1) {
+          isPrimary = db.hello().isWritablePrimary;
+          if (!isPrimary) sleep(1000);
+        }
+        if (!isPrimary) quit(1);
+    restart: "no"
 
 volumes:
   mongodb_data:
