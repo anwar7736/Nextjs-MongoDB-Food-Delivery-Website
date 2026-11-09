@@ -4,7 +4,7 @@ A Next.js food delivery app with customer, restaurant, and delivery-partner acco
 
 ## Local setup
 
-1. Copy `.env.example` to `.env.local` and add your MongoDB credentials.
+1. Copy `.env.example` to `.env.local` and add your MongoDB credentials. Set `MONGODB_URI` if you use a cluster other than the default Atlas cluster; local development requires a network that can resolve and reach the MongoDB host.
 2. Set `TOTP_ENCRYPTION_KEY` to a cryptographically random value of at least 32 characters. For example:
 
    ```bash
@@ -42,7 +42,7 @@ All three account types must verify their email during registration. Verificatio
 
 ## n8n customer assistant
 
-The website's floating chat button now opens a FoodFlow assistant that accepts typed or spoken messages, recommends local restaurants/food, and takes a guest order by asking for city, restaurant, menu items and quantities, customer name, delivery address, and phone. It shows a price summary and only places the order after the customer confirms. The browser's speech-recognition support depends on the browser and microphone permission. The website chat uses `/api/v1/assistant` and does not need n8n credentials.
+The website's floating chat button now opens a FoodFlow assistant that accepts typed or spoken messages, recommends local restaurants/food, and takes a guest order by asking for city, restaurant, menu items and quantities, customer name, delivery address, and phone. It shows a price summary and only places the order after the customer confirms. The browser's speech-recognition support depends on the browser and microphone permission. The website chat uses `/api/v1/assistant` and talks directly to FoodFlow's database-backed assistant, even when `N8N_WEBHOOK_URL` is configured. The optional n8n webhook is for external chat channels; it does not proxy the website's menu or order steps.
 
 An optional importable generic-webhook workflow is available at [n8n/foodflow-customer-assistant.json](./n8n/foodflow-customer-assistant.json). It forwards external customer messages to the n8n API and returns recommendations or an order invoice with a greeting. The webhook response includes a customer-facing `reply` string; display that string in the channel's message box so order confirmations show the greeting and invoice as readable text. The response also preserves structured invoice data. Successful chat recommendations pass through a Google Gemini AI Agent for concise, language-aware phrasing. A Simple Memory node keeps the last five chat interactions per session to help with language and conversational context. Send a stable, opaque `sessionId` for each active customer conversation (and an optional `channel` to separate channels); never use a shared session ID or put customer personal information in it. If `sessionId` is omitted, memory is isolated to that single execution. Chat messages and short-term memory are sent to Gemini; order actions and API errors bypass Gemini. Memory does not store carts, confirmation tokens, or order state—keep those in the channel's conversation state. Simple Memory is not supported by n8n in queue mode. FoodFlow response facts remain authoritative, and structured response data is preserved. After importing the workflow, configure a Google Gemini credential with your Gemini API key in the **Google Gemini Chat Model** node; no Gemini or FoodFlow secrets are included in the exported workflow.
 

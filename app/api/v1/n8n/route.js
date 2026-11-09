@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { createHmac, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { mongoDB_connect } from "@/app/helpers/helper";
+import { getDatabaseErrorDetails } from "@/app/lib/db";
 import { deliverySchema } from "@/app/models/deliveryModel";
 import { foodSchema } from "@/app/models/foodModel";
 import { orderItemSchema } from "@/app/models/orderItemModel";
@@ -13,16 +14,10 @@ import { DEFAULT_ORDER_STATUS_ID, orderStatusSchema } from "@/app/models/orderSt
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { userSchema } from "@/app/models/userModel";
 import { ORDER_STATUS_SEEDS } from "@/app/lib/orderStatus";
+import { getAssistantQueryTokens, normalizeAssistantText, scoreFoodMatch } from "@/app/lib/assistantText";
 
 const SHIPPING_CHARGE = 50;
 const MAX_ORDER_ITEMS = 20;
-const STOP_WORDS = new Set([
-  "a", "an", "and", "can", "do", "find", "for", "food", "have", "hello", "hey", "hi",
-  "i", "in", "is", "it", "list", "me", "menu", "menus", "nearby", "of", "on", "please",
-  "recommend", "restaurants", "restaurant", "show", "some", "suggestions", "the", "to",
-  "want", "where", "with", "you",
-]);
-
 function jsonResponse(success, message, status = 200, extra = {}) {
   return NextResponse.json({ success, message, ...extra }, { status });
 }
@@ -39,32 +34,27 @@ function hasValidApiKey(request) {
     timingSafeEqual(expectedBuffer, suppliedBuffer);
 }
 
-function normalizeText(value) {
-  return typeof value === "string"
-    ? value.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, " ").replace(/\s+/g, " ").trim()
-    : "";
-}
-
 export async function recommend(message, requestedLocation) {
-  const normalizedMessage = normalizeText(message);
+  const normalizedMessage = normalizeAssistantText(message);
   const cities = (await restaurantSchema.distinct("city"))
     .filter((city) => typeof city === "string" && city.trim());
-  const requestedLocationText = normalizeText(requestedLocation);
+  const requestedLocationText = normalizeAssistantText(requestedLocation);
   const matchedCity = requestedLocationText
     ? cities.find((city) => {
-      const normalizedCity = normalizeText(city);
+      const normalizedCity = normalizeAssistantText(city);
       return requestedLocationText === normalizedCity || requestedLocationText.includes(normalizedCity);
     }) || requestedLocation.trim()
-    : cities.find((city) => normalizedMessage.includes(normalizeText(city).toLowerCase()));
-  const greeting = /^(hi|hello|hey|salam|assalamu alaikum|good (morning|afternoon|evening))\b/.test(normalizedMessage);
-  const cityTokens = new Set(matchedCity ? normalizeText(matchedCity).split(" ") : []);
-  const queryTokens = normalizedMessage.split(" ").filter((token) =>
-    token.length > 1 && !STOP_WORDS.has(token) && !cityTokens.has(token)
-  );
+    : cities.find((city) => {
+      const cityTokens = normalizeAssistantText(city).split(" ");
+      const messageTokens = new Set(normalizedMessage.split(" "));
+      return cityTokens.every((token) => messageTokens.has(token));
+    });
+  const cityTokens = matchedCity ? normalizeAssistantText(matchedCity).split(" ") : [];
+  const queryTokens = getAssistantQueryTokens(normalizedMessage, cityTokens);
   const hasFoodQuery = queryTokens.length > 0;
   const foodQuery = queryTokens.join(" ");
 
-  if (!hasFoodQuery || greeting) {
+  if (!hasFoodQuery) {
     if (!matchedCity) {
       return {
         success: true,
@@ -110,11 +100,51 @@ export async function recommend(message, requestedLocation) {
   }
 
   const allFoods = await foodSchema.find({}).select("name price restaurant_id").limit(2000);
-  const matches = allFoods.filter((food) => {
-    const name = normalizeText(food.name);
-    return queryTokens.some((token) => name.includes(token));
-  });
+  const matches = allFoods.map((food) => ({
+    food,
+    score: scoreFoodMatch(queryTokens, food.name),
+  })).filter(({ score }) => score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(({ food }) => food);
   if (matches.length === 0) {
+    const restaurants = await restaurantSchema.find({})
+      .select("_id name city address")
+      .limit(1000);
+    const restaurantMatches = restaurants.map((restaurant) => ({
+      restaurant,
+      score: scoreFoodMatch(queryTokens, restaurant.name),
+    })).filter(({ score }) => score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    const matchingRestaurants = restaurantMatches.filter(({ restaurant }) =>
+      !matchedCity || normalizeAssistantText(restaurant.city) === normalizeAssistantText(matchedCity)
+    );
+    if (matchingRestaurants.length) {
+      const restaurantIds = matchingRestaurants.map(({ restaurant }) => restaurant._id);
+      const foods = await foodSchema.find({ restaurant_id: { $in: restaurantIds } })
+        .select("name price restaurant_id")
+        .limit(100);
+      const suggestions = matchingRestaurants.map(({ restaurant }) => ({
+        _id: String(restaurant._id),
+        name: restaurant.name,
+        location: restaurant.city,
+        address: restaurant.address,
+        foods: foods.filter((food) => String(food.restaurant_id) === String(restaurant._id))
+          .slice(0, 5)
+          .map((food) => ({ id: String(food._id), name: food.name, price: Number(food.price) })),
+      }));
+      const lines = suggestions.map((restaurant) =>
+        `${restaurant.name} (${restaurant.location}${restaurant.address ? `, ${restaurant.address}` : ""})` +
+        (restaurant.foods.length
+          ? `\n  ${restaurant.foods.map((food) => `${food.name} — Tk ${food.price.toFixed(2)}`).join("\n  ")}`
+          : "\n  Menu not available yet.")
+      );
+      return {
+        success: true,
+        reply: `Here are the restaurants I found:\n${lines.join("\n")}`,
+        data: { restaurants: suggestions },
+      };
+    }
     return {
       success: true,
       reply: `Sorry, I couldn't find “${foodQuery}” on the available menus. Try another food name or location.`,
@@ -127,7 +157,7 @@ export async function recommend(message, requestedLocation) {
   const restaurantById = new Map(restaurants.map((restaurant) => [String(restaurant._id), restaurant]));
   const available = matches.flatMap((food) => {
     const restaurant = restaurantById.get(String(food.restaurant_id));
-    if (!restaurant || (matchedCity && normalizeText(restaurant.city) !== normalizeText(matchedCity))) return [];
+    if (!restaurant || (matchedCity && normalizeAssistantText(restaurant.city) !== normalizeAssistantText(matchedCity))) return [];
     return [{
       id: String(food._id),
       restaurant_id: String(restaurant._id),
@@ -480,7 +510,10 @@ export async function placeOrder(payload) {
   });
 }
 
-export async function handleAssistantRequest(request, { requireN8nApiKey = false } = {}) {
+export async function handleAssistantRequest(request, {
+  requireN8nApiKey = false,
+  useN8nWebhook = true,
+} = {}) {
   if (requireN8nApiKey && !process.env.N8N_API_KEY) {
     return jsonResponse(false, "The n8n integration is not configured.", 503);
   }
@@ -494,7 +527,7 @@ export async function handleAssistantRequest(request, { requireN8nApiKey = false
       return jsonResponse(false, "Invalid request body.", 400);
     }
 
-    if (!requireN8nApiKey && process.env.N8N_WEBHOOK_URL) {
+    if (!requireN8nApiKey && useN8nWebhook && process.env.N8N_WEBHOOK_URL) {
       const webhookAuthToken = process.env.N8N_API_KEY;
       if (!webhookAuthToken || webhookAuthToken.length < 32) {
         return jsonResponse(false, "Configure N8N_API_KEY with at least 32 characters to call the protected n8n webhook.", 503);
@@ -566,8 +599,9 @@ export async function handleAssistantRequest(request, { requireN8nApiKey = false
     const result = await recommend(message, location);
     return NextResponse.json(result);
   } catch (error) {
-    console.error("n8n integration request failed:", error.message);
-    return jsonResponse(false, "Unable to process the FoodFlow assistant request.", 500);
+    console.error("FoodFlow assistant request failed:", error.message);
+    const { message, status } = getDatabaseErrorDetails(error);
+    return jsonResponse(false, message, status);
   }
 }
 

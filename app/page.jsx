@@ -26,8 +26,11 @@ export default function Home() {
     const controller = new AbortController();
     fetch("/api/v1/customer/locations", { signal: controller.signal })
       .then(async (response) => {
-        if (!response.ok) throw new Error("Unable to load locations.");
-        return response.json();
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Unable to load locations.");
+        }
+        return result;
       })
       .then((result) => {
         if (result.success) setLocations(result.data);
@@ -50,9 +53,10 @@ export default function Home() {
           restaurant: restaurantInput.trim(),
         });
         const response = await fetch(`/api/v1/customer?${query}`, { signal: controller.signal });
-        if (!response.ok) throw new Error("Restaurant search is temporarily unavailable.");
         const result = await response.json();
-        if (!result.success) throw new Error(result.message || "Restaurant search is temporarily unavailable.");
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Restaurant search is temporarily unavailable.");
+        }
         setRestaurants(result.data);
       } catch (error) {
         if (error.name !== "AbortError") {

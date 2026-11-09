@@ -2,6 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ImageWithFallback from "./ImageWithFallback";
+import {
+  findMenuItems,
+  isCancelIntent,
+  isDoneIntent,
+  isOrderIntent,
+  isYesIntent,
+  matchNamedOption,
+  normalizeAssistantText,
+} from "@/app/lib/assistantText";
 
 const initialMessage = {
   role: "assistant",
@@ -27,40 +36,8 @@ function OptionIcon({ type }) {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4V5Z" /><path d="M8 9h8M8 12h5" /></svg>;
 }
 
-function normalizeText(value) {
-  return value.toLowerCase().replace(/[^\p{L}\p{N}\s-]/gu, " ").replace(/\s+/g, " ").trim();
-}
-
-function isOrderIntent(value) {
-  return /\b(order|place|buy|checkout|kinbo|kine|order den|order dao|order dite chai)\b|অর্ডার|কিনতে চাই|অর্ডার দিন/i.test(value);
-}
-
-function isDone(value) {
-  return /^(done|no|that's all|thats all|checkout|continue|শেষ|হয়ে গেছে|হয়েছে|হয়ে গেছে|আর না)$/i.test(value.trim());
-}
-
-function isYes(value) {
-  return /^(yes|yeah|yep|confirm|confirmed|ঠিক আছে|হ্যাঁ|জি|হবে|হ্যাঁ অর্ডার দিন|নিশ্চিত)$/i.test(value.trim());
-}
-
-function findMenuItem(input, menu) {
-  const cleaned = normalizeText(input)
-    .replace(/(?:x|×)\s*\d+\s*$/i, "")
-    .replace(/\s+\d+\s*$/, "")
-    .replace(/^\s*\d+\s*(?:x|×)?\s*/, "")
-    .trim();
-  if (!cleaned) return null;
-  return menu.find((food) => {
-    const name = normalizeText(food.name);
-    return cleaned === name || cleaned.includes(name) || name.includes(cleaned);
-  });
-}
-
-function getQuantity(input) {
-  const match = input.match(/(?:x|×)\s*(\d+)\s*$/i) ||
-    input.match(/\s+(\d+)\s*$/) ||
-    input.match(/^\s*(\d+)\s*(?:x|×)?\s+/i);
-  return match ? Number(match[1]) : 1;
+function stripAnswerPrefix(value, prefix) {
+  return value.replace(prefix, "").trim();
 }
 
 export default function SupportWidget() {
@@ -75,16 +52,26 @@ export default function SupportWidget() {
   const messagesRef = useRef(null);
   const inputRef = useRef(null);
   const recognitionRef = useRef(null);
+  const sessionIdRef = useRef(null);
 
   const addMessage = useCallback((role, content) => {
     setMessages((items) => [...items, { role, content }]);
   }, []);
 
   const assistantRequest = useCallback(async (payload) => {
+    if (!sessionIdRef.current) {
+      const storageKey = "foodflow-assistant-session";
+      sessionIdRef.current = window.sessionStorage.getItem(storageKey);
+      if (!sessionIdRef.current) {
+        sessionIdRef.current = window.crypto?.randomUUID?.() ||
+          `foodflow-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        window.sessionStorage.setItem(storageKey, sessionIdRef.current);
+      }
+    }
     const response = await fetch("/api/v1/assistant", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, sessionId: sessionIdRef.current, channel: "web" }),
     });
     const result = await response.json();
     if (!response.ok || !result.success) {
@@ -101,6 +88,12 @@ export default function SupportWidget() {
     setIsSending(true);
 
     try {
+      if (orderDraft?.step === "confirmation" && isCancelIntent(text)) {
+        setOrderDraft(null);
+        addMessage("assistant", "No problem, I cancelled that order. You can ask me for recommendations or start a new order.");
+        return;
+      }
+
       if (!orderDraft && isOrderIntent(text)) {
         setOrderDraft({ step: "location", items: [], customer: {} });
         addMessage("assistant", "Sure, I can help place your order. Which city should I search in?");
@@ -120,11 +113,7 @@ export default function SupportWidget() {
       }
 
       if (orderDraft?.step === "restaurant") {
-        const selectedRestaurant = orderDraft.restaurants.find((item, index) =>
-          normalizeText(text) === normalizeText(item.name) ||
-          text.trim() === String(index + 1) ||
-          normalizeText(item.name).includes(normalizeText(text))
-        );
+        const selectedRestaurant = matchNamedOption(text, orderDraft.restaurants);
         if (!selectedRestaurant) {
           addMessage("assistant", "I couldn't match that restaurant. Choose its name or the number from the list.");
           return;
@@ -141,7 +130,7 @@ export default function SupportWidget() {
       }
 
       if (orderDraft?.step === "food") {
-        if (isDone(text)) {
+        if (isDoneIntent(text)) {
           if (!orderDraft.items.length) {
             addMessage("assistant", "Please choose at least one item from the menu first.");
             return;
@@ -150,57 +139,79 @@ export default function SupportWidget() {
           addMessage("assistant", "Got it. What name should I put on the order?");
           return;
         }
-        const food = findMenuItem(text, orderDraft.menu || []);
-        const quantity = getQuantity(text);
-        if (!food || !Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+        const menuMatches = findMenuItems(text, orderDraft.menu || []);
+        if (!menuMatches.length) {
           addMessage("assistant", "Please choose an item from the menu and give a quantity from 1 to 99. Type “done” when finished.");
           return;
         }
-        const existingItem = orderDraft.items.find((item) => item.id === food.id);
-        const items = existingItem
-          ? orderDraft.items.map((item) => item.id === food.id ? { ...item, quantity: item.quantity + quantity } : item)
-          : [...orderDraft.items, {
-            id: food.id,
-            restaurant_id: orderDraft.restaurant._id,
-            name: food.name,
-            price: food.price,
-            quantity,
-          }];
+        const topScore = menuMatches[0].score;
+        const topMatches = menuMatches.filter((match) => match.score === topScore);
+        if (topMatches.length > 1 && topMatches[0].start === topMatches[1].start) {
+          addMessage("assistant", `I found a few similar items. Which one do you mean?\n${topMatches.map(({ food }) => `• ${food.name}`).join("\n")}`);
+          return;
+        }
+        const selectedMatches = [];
+        for (const match of menuMatches) {
+          if (selectedMatches.some((selected) => match.start <= selected.end && selected.start <= match.end)) continue;
+          selectedMatches.push(match);
+        }
+        const items = [...orderDraft.items];
+        for (const { food, quantity } of selectedMatches) {
+          if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99) {
+            addMessage("assistant", "Please enter a quantity from 1 to 99 for each menu item.");
+            return;
+          }
+          const existingIndex = items.findIndex((item) => item.id === food.id);
+          if (existingIndex >= 0) {
+            items[existingIndex] = { ...items[existingIndex], quantity: items[existingIndex].quantity + quantity };
+          } else {
+            items.push({
+              id: food.id,
+              restaurant_id: orderDraft.restaurant._id,
+              name: food.name,
+              price: food.price,
+              quantity,
+            });
+          }
+        }
         if (items.some((item) => item.quantity > 99)) {
-          addMessage("assistant", "The maximum quantity per menu item is 99. Please enter a smaller quantity.");
+          addMessage("assistant", "The maximum quantity per menu item is 99. Please enter smaller quantities.");
           return;
         }
         setOrderDraft({ ...orderDraft, items });
-        addMessage("assistant", `Added ${food.name} x${quantity}. Anything else from this menu? Tell me the item and quantity, or type “done”.`);
+        addMessage("assistant", `Added ${selectedMatches.map(({ food, quantity }) => `${food.name} x${quantity}`).join(", ")}. Anything else from this menu? Tell me the item and quantity, or type “done”.`);
         return;
       }
 
       if (orderDraft?.step === "name") {
-        if (text.length < 2 || text.length > 120) {
+        const name = stripAnswerPrefix(text, /^(?:(?:my\s+)?name\s+is|name\s*[:=]|i\s+am|i(?:['’]m|m)|you can put it under|আমার নাম)\s*/i);
+        if (name.length < 2 || name.length > 120) {
           addMessage("assistant", "Please enter a name between 2 and 120 characters.");
           return;
         }
-        setOrderDraft({ ...orderDraft, step: "address", customer: { ...orderDraft.customer, name: text } });
+        setOrderDraft({ ...orderDraft, step: "address", customer: { ...orderDraft.customer, name } });
         addMessage("assistant", "What is the full delivery address?");
         return;
       }
 
       if (orderDraft?.step === "address") {
-        if (text.length < 5 || text.length > 300) {
+        const address = stripAnswerPrefix(text, /^(?:(?:my\s+)?address(?:\s+is)?|address\s*[:=]|i\s+live\s+at|deliver(?:y)?\s+to|delivery address is|আমার ঠিকানা)\s*/i);
+        if (address.length < 5 || address.length > 300) {
           addMessage("assistant", "Please enter a complete delivery address (5–300 characters).");
           return;
         }
-        setOrderDraft({ ...orderDraft, step: "phone", customer: { ...orderDraft.customer, address: text } });
+        setOrderDraft({ ...orderDraft, step: "phone", customer: { ...orderDraft.customer, address } });
         addMessage("assistant", "What phone number should the delivery partner call?");
         return;
       }
 
       if (orderDraft?.step === "phone") {
-        if (!/^[+]?[\d\s()-]{7,20}$/.test(text) || text.replace(/\D/g, "").length < 7) {
+        const phone = normalizeAssistantText(text).match(/\d[\d\s()-]{5,}\d/)?.[0].replace(/\D/g, "");
+        if (!phone || phone.length < 7 || phone.length > 20) {
           addMessage("assistant", "Please enter a valid phone number, including the country code if needed.");
           return;
         }
-        const customer = { ...orderDraft.customer, phone: text };
+        const customer = { ...orderDraft.customer, phone };
         const result = await assistantRequest({
           action: "order",
           customer,
@@ -218,13 +229,8 @@ export default function SupportWidget() {
       }
 
       if (orderDraft?.step === "confirmation") {
-        if (!isYes(text)) {
-          if (/^(no|cancel|না|বাতিল)$/i.test(text.trim())) {
-            setOrderDraft(null);
-            addMessage("assistant", "No problem, I cancelled that order. You can ask me for recommendations or start a new order.");
-          } else {
-            addMessage("assistant", "Please reply “yes” to confirm this order, or “no” to cancel.");
-          }
+        if (!isYesIntent(text)) {
+          addMessage("assistant", "Please confirm with “yes”, “জি”, or “ঠিক আছে”, or reply “no” to cancel.");
           return;
         }
         const result = await assistantRequest({
