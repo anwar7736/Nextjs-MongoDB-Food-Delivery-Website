@@ -16,6 +16,7 @@ const EditOrder = () => {
     const [statuses, setStatuses] = useState([]);
     const [foodItems, setFoodItems] = useState([]);
     const [rows, setRows] = useState([]);
+    const [currentOrder, setCurrentOrder] = useState(null);
     const [isDisabled, setIsDisabled] = useState(false);
     const [summary, setSummary] = useState({ total: 0, shipping_charge: 50, final_total: 0 });
     const {
@@ -50,7 +51,7 @@ const EditOrder = () => {
                 return;
             }
             toast.success(result.message);
-            router.push('/restaurant/dashboard');
+            router.push('/restaurant/dashboard?tab=orders');
         } catch (error) {
             console.error("Order update failed:", error);
             toast.error("Unable to update this order.");
@@ -194,6 +195,7 @@ const EditOrder = () => {
                 return;
             }
             const currentOrder = result.data[0];
+            setCurrentOrder(currentOrder);
             setRows(currentOrder.order_details || []);
             const shippingCharge = Number(currentOrder.shipping_charge) || 0;
             setSummary({

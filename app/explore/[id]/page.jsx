@@ -4,6 +4,7 @@ import { session } from "@/app/helpers/SessionHelper";
 import { toast } from "react-toastify";
 import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import ImageWithFallback from "../../_components/ImageWithFallback";
 
 const Explore = () => {
@@ -85,11 +86,16 @@ const Explore = () => {
           <div className="food-card-grid">
             {foodItems.map((item) => (
               <article className="food-card" key={item._id}>
-                <ImageWithFallback src={item.image} alt={item.name} />
-                <div className="food-card-content">
-                  <h2>{item.name}</h2>
-                  <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>
-                  {item.description && <p className="description">{item.description}</p>}
+                <Link href={`/food/${item._id}`} className="food-card-link">
+                  <ImageWithFallback src={item.image} alt={item.name} />
+                  <div className="food-card-content">
+                    <h2>{item.name}</h2>
+                    <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>
+                    {item.description && <p className="food-card-description">{item.description}</p>}
+                    <span className="food-card-more">View food details <span aria-hidden="true">→</span></span>
+                  </div>
+                </Link>
+                <div className="food-card-actions">
                   <button disabled={isDisabled}
                     className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
                     onClick={() => addToCart(item)}>Add to Cart</button>

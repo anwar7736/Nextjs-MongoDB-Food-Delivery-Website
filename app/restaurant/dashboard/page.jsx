@@ -3,10 +3,15 @@ import AddFood from "@/app/_components/restaurant/food/AddFood";
 import FoodList from "@/app/_components/restaurant/food/FoodList";
 import OrderList from "@/app/_components/restaurant/OrderList";
 import withAuth from "@/app/hoc/withAuth";
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 const Dashboard = () => {
   const [status, setStatus] = useState(1);
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("tab") === "orders") {
+      setStatus(3);
+    }
+  }, []);
   return (
     <div align="center">
       <title>Restaurant Dashboard</title>

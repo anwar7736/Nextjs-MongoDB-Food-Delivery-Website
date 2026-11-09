@@ -47,7 +47,7 @@ const PlaceOrder = () => {
                 return;
             }
             toast.success(result.message);
-            router.push('/restaurant/dashboard');
+            router.push('/restaurant/dashboard?tab=orders');
         } catch (error) {
             console.error("Order creation failed:", error);
             toast.error("Unable to place this order.");

@@ -64,6 +64,20 @@ const AddFood = (props) => {
             {errors.name && <ValidationError message={errors.name.message} />}
           </div>
           <div className="food-form-field">
+            <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="description">
+              Description
+            </label>
+            <textarea
+              className="food-form-control food-form-textarea"
+              id="description"
+              rows="5"
+              maxLength={2000}
+              placeholder="Describe the ingredients, flavor, or serving size"
+              {...register("description", { maxLength: { value: 2000, message: "Description cannot exceed 2000 characters." } })}
+            />
+            {errors.description && <ValidationError message={errors.description.message} />}
+          </div>
+          <div className="food-form-field">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="price">
               Price
             </label>
