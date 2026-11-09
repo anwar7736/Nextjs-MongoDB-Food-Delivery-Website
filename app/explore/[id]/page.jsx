@@ -6,6 +6,7 @@ import { useContext, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import ImageWithFallback from "../../_components/ImageWithFallback";
+import RestaurantContactCard from "@/app/_components/RestaurantContactCard";
 
 const Explore = () => {
   const params = useParams();
@@ -63,19 +64,7 @@ const Explore = () => {
 
   return (
     <div>
-      <div className="restaurant-page-banner">
-        <h1 className="text-lg">
-          {restaurantDetails?.name && decodeURI(restaurantDetails.name)}
-        </h1>
-
-
-      </div>
-      <div className="flex justify-between flex-wrap bg-green-200 p-2 text-sm text-black">
-        <h4>Contact: {restaurantDetails?.phone}</h4>
-        <h4>Email: {restaurantDetails?.email}</h4>
-        <h4>City: {restaurantDetails?.city}</h4>
-        <h4>Address: {restaurantDetails?.address}</h4>
-      </div>
+      {!isLoading && !loadError && <RestaurantContactCard restaurant={restaurantDetails} />}
 
       <div className="food-list-wrapper">
         {isLoading ? (
@@ -91,7 +80,7 @@ const Explore = () => {
                   <div className="food-card-content">
                     <h2>{item.name}</h2>
                     <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>
-                    {item.description && <p className="food-card-description">{item.description}</p>}
+                    {item.description && <div className="food-card-description rich-text-output" dangerouslySetInnerHTML={{ __html: item.description }} />}
                     <span className="food-card-more">View food details <span aria-hidden="true">→</span></span>
                   </div>
                 </Link>

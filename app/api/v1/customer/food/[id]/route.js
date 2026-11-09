@@ -3,6 +3,7 @@ import { mongoDB_connect } from "@/app/helpers/helper";
 import { foodSchema } from "@/app/models/foodModel";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
+import { sanitizeFoodDescription } from "@/app/lib/foodDescription";
 
 export async function GET(_request, { params }) {
   const { id } = await params;
@@ -11,10 +12,12 @@ export async function GET(_request, { params }) {
   }
 
   await mongoDB_connect();
-  const food = await foodSchema.findById(id).select("name description price image restaurant_id");
-  if (!food) {
+  const foodRecord = await foodSchema.findById(id).select("name description price image restaurant_id");
+  if (!foodRecord) {
     return NextResponse.json({ success: false, message: "Food item not found." }, { status: 404 });
   }
+  const food = foodRecord.toObject();
+  food.description = sanitizeFoodDescription(food.description);
 
   const restaurant = await restaurantSchema.findById(food.restaurant_id)
     .select("name phone email city address");

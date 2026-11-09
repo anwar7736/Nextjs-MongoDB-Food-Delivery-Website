@@ -4,10 +4,21 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import ValidationError from "../ValidationError";
 
-export default function EmailVerificationField({ accountType, email, register, errors, setError, clearErrors }) {
+export default function EmailVerificationField({
+  accountType,
+  email,
+  register,
+  errors,
+  setError,
+  clearErrors,
+  step,
+  onStepChange,
+  validateStep,
+}) {
   const [isSending, setIsSending] = useState(false);
 
   const sendCode = async () => {
+    if (validateStep && !(await validateStep())) return;
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setError("email", { type: "validate", message: "Provide a valid email address." });
       return;
@@ -31,12 +42,29 @@ export default function EmailVerificationField({ accountType, email, register, e
       }
 
       toast.success(result.message);
+      onStepChange?.(2);
     } catch {
       toast.error("Unable to reach the email verification service.");
     } finally {
       setIsSending(false);
     }
   };
+
+  if (step === 1) {
+    return (
+      <div className="registration-step-action">
+        <p>Step 1 of 2 · We’ll email you a one-time verification code.</p>
+        <button
+          className="registration-primary-button"
+          type="button"
+          disabled={isSending}
+          onClick={sendCode}
+        >
+          {isSending ? "Sending code…" : "Continue to email verification"}
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-6">
@@ -58,7 +86,7 @@ export default function EmailVerificationField({ accountType, email, register, e
           })}
         />
         <button
-          className="bg-gray-700 hover:bg-gray-800 text-white font-bold px-3 rounded whitespace-nowrap disabled:opacity-50"
+          className="registration-secondary-button"
           type="button"
           disabled={isSending}
           onClick={sendCode}

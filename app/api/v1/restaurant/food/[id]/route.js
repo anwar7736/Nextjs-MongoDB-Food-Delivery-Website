@@ -3,6 +3,7 @@ import { foodSchema } from "@/app/models/foodModel";
 import { NextResponse } from "next/server";
 import { verifyAuthSession } from "@/app/lib/session";
 import mongoose from "mongoose";
+import { sanitizeFoodDescription } from "@/app/lib/foodDescription";
 
 export async function GET(request, { params })
 {
@@ -15,10 +16,12 @@ export async function GET(request, { params })
         return NextResponse.json({ success: false, message: "Invalid food item." }, { status: 400 });
     }
     await mongoDB_connect();
-    const data = await foodSchema.findOne({ _id: id, restaurant_id: session.id });
-    if (!data) {
+    const food = await foodSchema.findOne({ _id: id, restaurant_id: session.id });
+    if (!food) {
         return NextResponse.json({ success: false, message: "Food item not found." }, { status: 404 });
     }
+    const data = food.toObject();
+    data.description = sanitizeFoodDescription(data.description);
     return NextResponse.json({ success: true, data });
 }
 
@@ -43,7 +46,7 @@ export async function PUT(request, { params })
         !Number.isFinite(Number(payload.price)) ||
         Number(payload.price) < 0 ||
         (payload.description != null && typeof payload.description !== "string") ||
-        (typeof payload.description === "string" && payload.description.trim().length > 2000) ||
+        (typeof payload.description === "string" && payload.description.length > 10_000) ||
         (payload.image != null && typeof payload.image !== "string") ||
         (typeof payload.image === "string" && payload.image.trim().length > 600_000)) {
         return NextResponse.json({ success: false, message: "Invalid food item details." }, { status: 400 });
@@ -53,7 +56,7 @@ export async function PUT(request, { params })
         price: Number(payload.price),
     };
     if (typeof payload.description === "string") {
-        updates.description = payload.description.trim();
+        updates.description = sanitizeFoodDescription(payload.description);
     }
     if (typeof payload.image === "string") {
         updates.image = payload.image.trim();

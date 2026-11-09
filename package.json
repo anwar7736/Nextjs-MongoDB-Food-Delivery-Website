@@ -19,6 +19,7 @@
     "react-dom": "^18",
     "react-hook-form": "^7.53.1",
     "react-toastify": "^10.0.6",
+    "sanitize-html": "^2.18.1",
     "sweetalert2": "^11.14.5"
   },
   "devDependencies": {

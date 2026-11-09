@@ -3,6 +3,7 @@ import { foodSchema } from "@/app/models/foodModel";
 import { restaurantSchema } from "@/app/models/restaurantModel";
 import { NextResponse } from "next/server";
 import { verifyAuthSession } from "@/app/lib/session";
+import { sanitizeFoodDescription } from "@/app/lib/foodDescription";
 
 export async function GET(request) 
 {
@@ -15,7 +16,11 @@ export async function GET(request)
         { _id: restaurant_id },
         { name: 1, phone: 1, email: 1, city: 1, address: 1 }
     );
-    foodItems = await foodSchema.find({restaurant_id});
+    foodItems = await foodSchema.find({restaurant_id}).lean();
+    foodItems = foodItems.map((item) => ({
+        ...item,
+        description: sanitizeFoodDescription(item.description),
+    }));
     if(restaurantDetails && foodItems)
     {
         success = true;
@@ -41,7 +46,7 @@ export async function POST(request)
         !Number.isFinite(Number(payload.price)) ||
         Number(payload.price) < 0 ||
         (payload.description != null && typeof payload.description !== "string") ||
-        (typeof payload.description === "string" && payload.description.trim().length > 2000) ||
+        (typeof payload.description === "string" && payload.description.length > 10_000) ||
         (payload.image != null && typeof payload.image !== "string") ||
         (typeof payload.image === "string" && payload.image.trim().length > 600_000)) {
         return NextResponse.json({ success: false, message: "Invalid food item details." }, { status: 400 });
@@ -49,7 +54,7 @@ export async function POST(request)
 
     data = await foodSchema({
         name: payload.name.trim(),
-        description: typeof payload.description === "string" ? payload.description.trim() : "",
+        description: sanitizeFoodDescription(payload.description),
         price: Number(payload.price),
         image: typeof payload.image === "string" ? payload.image.trim() : "",
         restaurant_id: session.id,

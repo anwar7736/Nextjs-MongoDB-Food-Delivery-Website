@@ -4,12 +4,15 @@ import ValidationError from "../../ValidationError";
 import { restaurant_auth } from "@/app/helpers/helper";
 import { useState } from "react";
 import FoodImageUpload from "./FoodImageUpload";
+import RichTextEditor from "./RichTextEditor";
 const AddFood = (props) => {
   const [isDisabled, setIsDisabled] = useState(false);
   const [isImageProcessing, setIsImageProcessing] = useState(false);
   const [uploadedImage, setUploadedImage] = useState("");
   const {
     register,
+    setValue,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm();
@@ -67,14 +70,12 @@ const AddFood = (props) => {
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="description">
               Description
             </label>
-            <textarea
-              className="food-form-control food-form-textarea"
+            <RichTextEditor
               id="description"
-              rows="5"
-              maxLength={2000}
-              placeholder="Describe the ingredients, flavor, or serving size"
-              {...register("description", { maxLength: { value: 2000, message: "Description cannot exceed 2000 characters." } })}
+              value={watch("description") || ""}
+              onChange={(value) => setValue("description", value, { shouldDirty: true })}
             />
+            <input type="hidden" {...register("description")} />
             {errors.description && <ValidationError message={errors.description.message} />}
           </div>
           <div className="food-form-field">

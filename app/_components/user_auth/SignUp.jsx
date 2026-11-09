@@ -16,16 +16,19 @@ const SignUp = () => {
   const {user, setUser} = useContext(UserAuthContext);
   const {delivery, setDelivery} = useContext(DeliveryAuthContext);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [step, setStep] = useState(1);
   const {
     register,
     handleSubmit,
     watch,
     setError,
     clearErrors,
+    trigger,
     formState: { errors },
   } = useForm();
 
   const signupFormHandler = async (data) => {
+    if (step !== 2) return;
     setIsDisabled(true);
     data.login = false;
     try {
@@ -71,6 +74,12 @@ const SignUp = () => {
       <h2>Registration</h2>
       <div className="w-full max-w-xs">
         <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={ handleSubmit(signupFormHandler)}>
+          <div className="registration-step-indicator" aria-label={`Registration step ${step} of 2`}>
+            <span className={step === 1 ? "is-current" : "is-complete"}>1 <span>Your details</span></span>
+            <i />
+            <span className={step === 2 ? "is-current" : ""}>2 <span>Email verification</span></span>
+          </div>
+          <div hidden={step !== 1}>
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="name">
               Name
@@ -101,14 +110,6 @@ const SignUp = () => {
             })} />
             {errors.email && <ValidationError message={errors.email.message} />}
           </div>
-          <EmailVerificationField
-            accountType="user"
-            email={watch("email")}
-            register={register}
-            errors={errors}
-            setError={setError}
-            clearErrors={clearErrors}
-          />
           <div className="mb-4">
             <label className="block text-gray-700 text-sm font-bold mb-2 text-start" htmlFor="address">
               Address
@@ -138,15 +139,30 @@ const SignUp = () => {
             <input className="shadow appearance-none border border-green-300 rounded w-full py-2 px-3 text-gray-700 mb-1 leading-tight focus:outline-none focus:shadow-outline" id="cpassword" type="password" placeholder="******************" {...register("cpassword", {required:'This field is required.', validate: (value) => value === watch("password") || "Both passwords must match."})}/>
             {errors.cpassword && <ValidationError message={errors.cpassword.message} />}
           </div>
+          </div>
+          <EmailVerificationField
+            accountType="user"
+            email={watch("email")}
+            register={register}
+            errors={errors}
+            setError={setError}
+            clearErrors={clearErrors}
+            step={step}
+            onStepChange={setStep}
+            validateStep={() => trigger(["name", "phone", "email", "address", "password", "cpassword"])}
+          />
+          {step === 2 && (
           <div className="flex items-center justify-between">
+            <button type="button" className="registration-back-button" onClick={() => setStep(1)}>Back</button>
             <button 
               disabled={isDisabled}
               className={`bg-green-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ${isDisabled ? 'cursor-not-allowed opacity-50' : ''
                   }`}
             type="submit">
-              Register
+              {isDisabled ? "Creating account…" : "Verify & Register"}
             </button>
           </div>
+          )}
         </form>
       </div>
     </div>

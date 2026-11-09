@@ -21,12 +21,14 @@ const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [installStatusReady, setInstallStatusReady] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const installed = window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true;
     setIsInstalled(installed);
+    setInstallStatusReady(true);
 
     const handleInstallPrompt = (event) => {
       event.preventDefault();
@@ -137,9 +139,11 @@ const Header = () => {
         </nav>
 
         <div className="header-actions">
-          <button className="install-button" type="button" onClick={installApp}>
-            {isInstalled ? "App installed" : "Install App"}
-          </button>
+          {installStatusReady && !isInstalled && (
+            <button className="install-button" type="button" onClick={installApp}>
+              Install App
+            </button>
+          )}
           {user && (
             <button className="header-logout" type="button" onClick={() => logout("user")}>Sign out</button>
           )}

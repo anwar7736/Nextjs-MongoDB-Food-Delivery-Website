@@ -215,9 +215,83 @@
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
 }
 
-.food-form-textarea {
-  min-height: 132px;
-  resize: vertical;
+.rich-text-editor {
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #cbd9ce;
+  border-radius: 11px;
+}
+
+.rich-text-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 8px;
+  background: #f5f8f5;
+  border-bottom: 1px solid #e1e9e2;
+}
+
+.rich-text-toolbar button {
+  min-width: 36px;
+  min-height: 34px;
+  padding: 0 9px;
+  color: #314b38;
+  background: #fff;
+  border: 1px solid #dce7dd;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.rich-text-toolbar button:hover {
+  background: #e8f4eb;
+}
+
+.rich-text-content {
+  min-height: 150px;
+  padding: 12px 14px;
+  color: var(--foreground);
+  outline: none;
+  overflow-wrap: anywhere;
+}
+
+.rich-text-content:empty::before {
+  color: #89968c;
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.rich-text-hint {
+  display: block;
+  padding: 0 14px 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.rich-text-output p {
+  margin: 0 0 0.65em;
+}
+
+.rich-text-output p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text-output ul,
+.rich-text-output ol {
+  padding-left: 1.4em;
+  margin: 0.4em 0;
+}
+
+.rich-text-output a {
+  color: var(--brand-dark);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+
+.rich-text-output blockquote {
+  padding-left: 12px;
+  margin: 0.6em 0;
+  color: #526357;
+  border-left: 3px solid #a7d6b1;
 }
 
 .food-form-actions {
@@ -665,6 +739,74 @@
 .food-detail-error a {
   color: var(--brand-dark);
   font-weight: 750;
+}
+
+.registration-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 26px;
+  color: #829087;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.registration-step-indicator > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.registration-step-indicator > span::first-letter {
+  font-weight: 800;
+}
+
+.registration-step-indicator > span.is-current,
+.registration-step-indicator > span.is-complete {
+  color: var(--brand-dark);
+}
+
+.registration-step-indicator > i {
+  height: 1px;
+  flex: 1;
+  background: #dce7dd;
+}
+
+.registration-step-action {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 4px;
+}
+
+.registration-step-action p {
+  margin: 0;
+  color: #64746a;
+  font-size: 0.88rem;
+}
+
+.registration-primary-button,
+.registration-secondary-button,
+.registration-back-button {
+  min-height: 42px;
+  padding: 0 15px;
+  color: #fff;
+  font-weight: 700;
+  background: var(--brand);
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+
+.registration-secondary-button,
+.registration-back-button {
+  color: #34483a;
+  background: #edf3ee;
+}
+
+.registration-primary-button:disabled,
+.registration-secondary-button:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 
 .food-dashboard-cards,
