@@ -8,9 +8,9 @@ import { useEffect, useState } from "react"
 const Dashboard = () => {
   const [status, setStatus] = useState(1);
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get("tab") === "orders") {
-      setStatus(3);
-    }
+    const tab = new URLSearchParams(window.location.search).get("tab");
+    const tabStatuses = { foods: 1, "add-food": 2, orders: 3 };
+    if (tabStatuses[tab]) setStatus(tabStatuses[tab]);
   }, []);
   return (
     <div align="center">

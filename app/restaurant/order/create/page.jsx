@@ -197,6 +197,17 @@ const PlaceOrder = () => {
 
     return (
         <main className="order-editor">
+            <div className="flex flex-wrap justify-center gap-2 m-3">
+                <button type="button" onClick={() => router.push("/restaurant/dashboard?tab=foods")} className="btn bg-green-600 p-2 rounded text-white">
+                    Food List
+                </button>
+                <button type="button" onClick={() => router.push("/restaurant/dashboard?tab=add-food")} className="btn bg-blue-600 p-2 rounded text-white">
+                    Add Food
+                </button>
+                <button type="button" onClick={() => router.push("/restaurant/dashboard?tab=orders")} className="btn bg-gray-600 p-2 rounded text-white">
+                    Order List
+                </button>
+            </div>
             <h2 className="font-bold mt-4">Place New Order</h2>
             <div className="w-full">
                 <form className="order-editor-card" onSubmit={handleSubmit(submitFormHandler)}>
