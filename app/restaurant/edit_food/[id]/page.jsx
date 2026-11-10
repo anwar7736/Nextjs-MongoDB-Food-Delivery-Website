@@ -75,6 +75,16 @@ const EditFood = () => {
 
   return (
     <main className="food-editor">
+      <div className="m-3 flex justify-start">
+        <button
+          type="button"
+          onClick={() => router.push("/restaurant/dashboard?tab=foods")}
+          className="btn rounded bg-gray-600 p-2 text-white"
+          aria-label="Back to food list"
+        >
+          ← Back
+        </button>
+      </div>
       <h2>Edit Food Item</h2>
       <div className="food-editor-content">
         <form className="food-form-card" onSubmit={handleSubmit(submitFormHandler)}>

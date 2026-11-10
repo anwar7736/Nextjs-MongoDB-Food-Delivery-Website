@@ -229,6 +229,16 @@ const EditOrder = () => {
 
     return (
         <main className="order-editor">
+            <div className="m-3 flex justify-start">
+                <button
+                    type="button"
+                    onClick={() => router.push("/restaurant/dashboard?tab=orders")}
+                    className="btn rounded bg-gray-600 p-2 text-white"
+                    aria-label="Back to order list"
+                >
+                    ← Back
+                </button>
+            </div>
             <h2 className="font-bold mt-4">Edit Order</h2>
             <div className="w-full">
                 <form className="order-editor-card" onSubmit={handleSubmit(submitFormHandler)}>
