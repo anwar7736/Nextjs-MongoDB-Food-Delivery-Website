@@ -4,9 +4,13 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import ImageWithFallback from "../../ImageWithFallback";
+import SearchInput from "../../SearchInput";
+import { matchesSearch } from "@/app/helpers/listSearch";
 const FoodList = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const visibleFoodItems = foodItems.filter((item) => matchesSearch(searchTerm, item.name));
   const getFoodList = async () => {
     try {
       const restaurant = await restaurant_auth();
@@ -65,6 +69,12 @@ const FoodList = () => {
   return (
     <div>
       <h4>List of All Food Item</h4>
+      <SearchInput
+        label="Search food items"
+        placeholder="Search by food name..."
+        value={searchTerm}
+        onChange={setSearchTerm}
+      />
       <div className="relative hidden overflow-x-auto shadow-md sm:block sm:rounded-lg">
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -85,7 +95,13 @@ const FoodList = () => {
           </thead>
           <tbody>
             {
-              foodItems.map((item) => (
+              visibleFoodItems.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-4 text-center" colSpan={4}>
+                    {foodItems.length === 0 ? "No food items yet." : "No food items match your search."}
+                  </td>
+                </tr>
+              ) : visibleFoodItems.map((item) => (
                 <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={item?._id}>
                   <td scope="row" className="flex items-center px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                     <ImageWithFallback className="w-10 h-10 rounded-full" src={item?.image} alt={item?.name} />
@@ -113,9 +129,11 @@ const FoodList = () => {
         </table>
       </div>
       <div className="food-dashboard-cards sm:hidden">
-        {foodItems.length === 0 ? (
-          <p className="dashboard-empty-card">No food items yet. Add your first menu item.</p>
-        ) : foodItems.map((item) => (
+        {visibleFoodItems.length === 0 ? (
+          <p className="dashboard-empty-card">
+            {foodItems.length === 0 ? "No food items yet. Add your first menu item." : "No food items match your search."}
+          </p>
+        ) : visibleFoodItems.map((item) => (
           <article className="food-dashboard-card" key={item._id}>
             <ImageWithFallback src={item.image} alt={item.name} />
             <div className="food-dashboard-card-details">

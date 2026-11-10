@@ -6,12 +6,16 @@ import Swal from "sweetalert2";
 import Link from "next/link";
 import { toast } from "react-toastify";
 import OrderStatusControl from "@/app/_components/order/OrderStatusControl";
+import SearchInput from "@/app/_components/SearchInput";
+import { matchesOrderSearch } from "@/app/helpers/listSearch";
 
 const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [order, setOrder] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const visibleOrders = orders.filter((item) => matchesOrderSearch(item, searchTerm));
 
   const updateOrderStatus = (id, status) => {
     setOrders((items) => items.map((item) =>
@@ -95,6 +99,12 @@ const OrderList = () => {
     <div align="center">
       <div className="no-print">
         <h4 className="m-3">All Order List</h4>
+        <SearchInput
+          label="Search orders"
+          placeholder="Search by invoice, customer, delivery, or status..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
         <div align="right" className="m-4">
           <Link href="/restaurant/order/create" className="bg-purple-600 p-2 text-white rounded">Place Order</Link>
         </div>
@@ -133,7 +143,13 @@ const OrderList = () => {
             </thead>
             <tbody>
               {
-                orders?.map((order) => (
+                visibleOrders.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-4 text-center" colSpan={9}>
+                      {orders.length === 0 ? "No orders yet." : "No orders match your search."}
+                    </td>
+                  </tr>
+                ) : visibleOrders.map((order) => (
                   <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={order?._id}>
                     <td className="px-6 py-4">
                       {order?.date && dateFormat(order.date)}
@@ -204,9 +220,11 @@ const OrderList = () => {
           </table>
         </div>
         <div className="order-dashboard-cards sm:hidden">
-          {orders.length === 0 ? (
-            <p className="dashboard-empty-card">No orders yet.</p>
-          ) : orders.map((order) => (
+          {visibleOrders.length === 0 ? (
+            <p className="dashboard-empty-card">
+              {orders.length === 0 ? "No orders yet." : "No orders match your search."}
+            </p>
+          ) : visibleOrders.map((order) => (
             <article className="order-dashboard-card" key={order._id}>
               <div className="order-dashboard-card-heading">
                 <div>

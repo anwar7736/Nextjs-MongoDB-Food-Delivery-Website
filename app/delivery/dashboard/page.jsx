@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import InvoiceModal from "@/app/_components/order/InvoiceModal";
 import { toast } from "react-toastify";
 import OrderStatusControl from "@/app/_components/order/OrderStatusControl";
+import SearchInput from "@/app/_components/SearchInput";
+import { matchesOrderSearch } from "@/app/helpers/listSearch";
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
@@ -12,6 +14,8 @@ const Dashboard = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const visibleOrders = orders.filter((item) => matchesOrderSearch(item, searchTerm));
 
   const updateOrderStatus = (id, status) => {
     setOrders((items) => items.map((item) =>
@@ -61,6 +65,12 @@ const Dashboard = () => {
       <title>Delivery Partner Dashboard</title>
       <div className="no-print">
         <h4 className="m-3">All Order List</h4>
+        <SearchInput
+          label="Search orders"
+          placeholder="Search by invoice, restaurant, customer, or status..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
         <div className="relative hidden overflow-x-auto shadow-md sm:block sm:rounded-lg">
           <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -97,9 +107,13 @@ const Dashboard = () => {
             <tbody>
               {isLoading ? (
                 <tr><td className="px-6 py-4 text-center" colSpan={9}>Loading orders…</td></tr>
-              ) : orders.length === 0 ? (
-                <tr><td className="px-6 py-4 text-center" colSpan={9}>No orders yet.</td></tr>
-              ) : orders.map((order) => (
+              ) : visibleOrders.length === 0 ? (
+                <tr>
+                  <td className="px-6 py-4 text-center" colSpan={9}>
+                    {orders.length === 0 ? "No orders yet." : "No orders match your search."}
+                  </td>
+                </tr>
+              ) : visibleOrders.map((order) => (
                   <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={order?._id}>
                     <td className="px-6 py-4">
                       {order?.date && dateFormat(order.date)}
@@ -152,9 +166,11 @@ const Dashboard = () => {
         <div className="order-dashboard-cards sm:hidden">
           {isLoading ? (
             <p className="dashboard-empty-card" role="status">Loading orders…</p>
-          ) : orders.length === 0 ? (
-            <p className="dashboard-empty-card">No orders yet.</p>
-          ) : orders.map((order) => (
+          ) : visibleOrders.length === 0 ? (
+            <p className="dashboard-empty-card">
+              {orders.length === 0 ? "No orders yet." : "No orders match your search."}
+            </p>
+          ) : visibleOrders.map((order) => (
             <article className="order-dashboard-card" key={order._id}>
               <div className="order-dashboard-card-heading">
                 <div>

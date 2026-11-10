@@ -4,12 +4,16 @@ import withUserAuth from "@/app/hoc/withUserAuth";
 import { useState, useEffect } from "react"
 import InvoiceModal from "@/app/_components/order/InvoiceModal";
 import { toast } from "react-toastify";
+import SearchInput from "@/app/_components/SearchInput";
+import { matchesOrderSearch } from "@/app/helpers/listSearch";
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
   const [order, setOrder] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const visibleOrders = orders.filter((item) => matchesOrderSearch(item, searchTerm));
 
   const getOrderList = async () => {
     try {
@@ -46,7 +50,7 @@ const Dashboard = () => {
   useEffect(() => {
     getOrderList();
   }, []);
-  const checkoutSummaries = Object.values(orders.reduce((groups, currentOrder) => {
+  const checkoutSummaries = Object.values(visibleOrders.reduce((groups, currentOrder) => {
     const key = currentOrder.checkout_id || currentOrder._id;
     if (!groups[key]) {
       groups[key] = {
@@ -67,6 +71,12 @@ const Dashboard = () => {
       <title>Restaurant Dashboard</title>
       <div className="no-print">
         <h4 className="m-3">All Order List</h4>
+        <SearchInput
+          label="Search orders"
+          placeholder="Search by invoice, restaurant, delivery, or status..."
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
         {checkoutSummaries.length > 0 && (
           <section className="mx-3 mb-4 rounded-lg bg-green-50 p-4 text-left" aria-label="Checkout summaries">
             <h5 className="font-bold">Checkout summaries</h5>
@@ -114,7 +124,13 @@ const Dashboard = () => {
             </thead>
             <tbody>
               {
-                orders?.map((order) => (
+                visibleOrders.length === 0 ? (
+                  <tr>
+                    <td className="px-6 py-4 text-center" colSpan={9}>
+                      {orders.length === 0 ? "No orders yet." : "No orders match your search."}
+                    </td>
+                  </tr>
+                ) : visibleOrders.map((order) => (
                   <tr className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-600" key={order?._id}>
                     <td className="px-6 py-4">
                       {order?.date && dateFormat(order.date)}
@@ -160,9 +176,11 @@ const Dashboard = () => {
           </table>
         </div>
         <div className="order-dashboard-cards sm:hidden">
-          {orders.length === 0 ? (
-            <p className="dashboard-empty-card">No orders yet.</p>
-          ) : orders.map((order) => (
+          {visibleOrders.length === 0 ? (
+            <p className="dashboard-empty-card">
+              {orders.length === 0 ? "No orders yet." : "No orders match your search."}
+            </p>
+          ) : visibleOrders.map((order) => (
             <article className="order-dashboard-card" key={order._id}>
               <div className="order-dashboard-card-heading">
                 <div>

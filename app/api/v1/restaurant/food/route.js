@@ -16,7 +16,7 @@ export async function GET(request)
         { _id: restaurant_id },
         { name: 1, phone: 1, email: 1, city: 1, address: 1 }
     );
-    foodItems = await foodSchema.find({restaurant_id}).lean();
+    foodItems = await foodSchema.find({ restaurant_id }).sort({ _id: -1 }).lean();
     foodItems = foodItems.map((item) => ({
         ...item,
         description: sanitizeFoodDescription(item.description),

@@ -7,6 +7,8 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ImageWithFallback from "../../_components/ImageWithFallback";
 import RestaurantContactCard from "@/app/_components/RestaurantContactCard";
+import SearchInput from "@/app/_components/SearchInput";
+import { matchesSearch } from "@/app/helpers/listSearch";
 
 const Explore = () => {
   const params = useParams();
@@ -17,6 +19,8 @@ const Explore = () => {
   const [isDisabled, setIsDisabled] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const visibleFoodItems = foodItems.filter((item) => matchesSearch(searchTerm, item.name));
 
   const getRestaurantDetails = async () => {
     setIsLoading(true);
@@ -71,29 +75,41 @@ const Explore = () => {
           <p className="text-center" role="status">Loading menu…</p>
         ) : loadError ? (
           <p className="text-center text-red-600" role="alert">{loadError}</p>
-        ) : foodItems.length > 0 ? (
-          <div className="food-card-grid">
-            {foodItems.map((item) => (
-              <article className="food-card" key={item._id}>
-                <Link href={`/food/${item._id}`} className="food-card-link">
-                  <ImageWithFallback src={item.image} alt={item.name} />
-                  <div className="food-card-content">
-                    <h2>{item.name}</h2>
-                    <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>
-                    {item.description && <div className="food-card-description rich-text-output" dangerouslySetInnerHTML={{ __html: item.description }} />}
-                    <span className="food-card-more">View food details <span aria-hidden="true">→</span></span>
-                  </div>
-                </Link>
-                <div className="food-card-actions">
-                  <button disabled={isDisabled}
-                    className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
-                    onClick={() => addToCart(item)}>Add to Cart</button>
-                </div>
-              </article>
-            ))}
-          </div>
         ) : (
-          <h1 className="text-center text-red-600">No food items found for this restaurant.</h1>
+          <>
+            <SearchInput
+              label="Search menu"
+              placeholder="Search by food name..."
+              value={searchTerm}
+              onChange={setSearchTerm}
+            />
+            {visibleFoodItems.length > 0 ? (
+              <div className="food-card-grid">
+                {visibleFoodItems.map((item) => (
+                  <article className="food-card" key={item._id}>
+                    <Link href={`/food/${item._id}`} className="food-card-link">
+                      <ImageWithFallback src={item.image} alt={item.name} />
+                      <div className="food-card-content">
+                        <h2>{item.name}</h2>
+                        <p className="food-card-price">Tk {Number(item.price).toFixed(2)}</p>
+                        {item.description && <div className="food-card-description rich-text-output" dangerouslySetInnerHTML={{ __html: item.description }} />}
+                        <span className="food-card-more">View food details <span aria-hidden="true">→</span></span>
+                      </div>
+                    </Link>
+                    <div className="food-card-actions">
+                      <button disabled={isDisabled}
+                        className={`add_button ${isDisabled ? 'cursor-not-allowed opacity-50' : ''}`}
+                        onClick={() => addToCart(item)}>Add to Cart</button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : foodItems.length > 0 ? (
+              <p className="text-center">No food items match your search.</p>
+            ) : (
+              <h1 className="text-center text-red-600">No food items found for this restaurant.</h1>
+            )}
+          </>
         )}
       </div>
     </div>
